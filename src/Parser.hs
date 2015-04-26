@@ -5,10 +5,49 @@ import ScannerTypes
 
 import ParserTypes
 
+
+gatherData :: [Token] -> Maybe ([Data], [Token])
+
+gatherData [] = Nothing
+
+gatherData ((Token SYMBOL "main"):(Token PUNCTUATION ":"):more) = Just ([],((Token SYMBOL "main"):(Token PUNCTUATION ":"):more))
+
+gatherData (token:more) = do
+    (dataVar, moreCode') <- getUntil_SemiColon more 0
+    (moreData, functions) <- gatherData moreCode'
+    dataVar' <- processData (token:dataVar)
+    Just (dataVar':moreData,functions)
+
+
+processData :: [Token] -> Maybe Data
+processData ((Token SYMBOL "array"):(Token SYMBOL dataType):(Token SYMBOL name):(Token ASSIGNMENT "="):(Token INTEGER size):(Token PUNCTUATION ";"):[]) =
+    case dataType of
+        "numbers" -> Just (Array dataType name (read size::Int))
+        "chars"   -> Just (Array dataType name (read size::Int))
+        _ -> Nothing
+
+processData ((Token SYMBOL "string"):(Token SYMBOL name):(Token ASSIGNMENT "="):(Token STRING lit):(Token PUNCTUATION ";"):[]) = do
+    Just (Global "string" name lit)
+
+processData ((Token SYMBOL "char"):(Token SYMBOL name):(Token ASSIGNMENT "="):(Token CHAR lit):(Token PUNCTUATION ";"):[]) = do
+    Just (Global "char" name lit)
+
+processData ((Token SYMBOL "number"):(Token SYMBOL name):(Token ASSIGNMENT "="):(Token INTEGER num):(Token PUNCTUATION ";"):[]) = do
+    Just (Global "char" name num)
+
+processData _ = Nothing
+
+gatherFunctions :: [Token] -> Maybe [Function]
+gatherFunctions [] = Just []
+gatherFunctions input = do
+    (function, more) <- gatherFunction input
+    rest <- gatherFunctions more
+    Just (function:rest)
+
 gatherFunction :: [Token] -> Maybe (Function, [Token])
 gatherFunction ((Token SYMBOL name):rest) = do
     (args, more) <- getUntil_Colon rest 0
-    args' <- symbolsToString (init args)
+    args' <- symbolsToString (init args) -- extracts string of symbols , removing the ending colon
     (body, nextFunc) <- gatherStatements more (Fdata name args'(0,0,0))
     Just ((Function name args' body), nextFunc)
 

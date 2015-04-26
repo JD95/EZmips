@@ -7,14 +7,14 @@ data MathTree = AddNode MathTree MathTree | SubNode MathTree MathTree |
 {-Utilities-}
 
 {--- The subtrees are converted from Maybe values to values ---------------------------------}
-mergeInstructions :: [Maybe [String]] -> Maybe [String]
-mergeInstructions [] = Just []
-mergeInstructions [value] = case value of
+mergeMaybes :: [Maybe [a]] -> Maybe [a]
+mergeMaybes [] = Just []
+mergeMaybes [value] = case value of
                            Just value' -> Just value'
                            Nothing     -> Nothing
 
-mergeInstructions (value:rest) =
-    let values = mergeInstructions rest in
+mergeMaybes (value:rest) =
+    let values = mergeMaybes rest in
     case values of
         Just values' -> case value of
                              Just value' -> Just (value'++ values')

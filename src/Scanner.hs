@@ -24,17 +24,27 @@ extractTokens input tokenList = let (newToken, rest) = getNextChunk ([], input) 
                                         (Nothing, invalid)  -> extractTokens rest ((Token ERROR invalid): tokenList)
 
 getNextChunk :: (String, String) -> (String,String)
+getNextChunk ([], '"':rest) = getStringChunk (['"'],rest)
 getNextChunk (newChunk, []) = (reverse newChunk, [])                                           -- End of line
 getNextChunk (newChunk, ' ':rest) = (reverse newChunk, ' ':rest)                               -- Stop at whitespace
+getNextChunk (newChunk, '\n':rest) = getNextChunk (newChunk, rest)                             -- Eat new lines
+getNextChunk (newChunk, '\t':rest) = getNextChunk (newChunk, rest)                             -- Eat new lines
 getNextChunk (newChunk, rest) = getNextChunk ((head rest):newChunk, tail rest)                 -- Pull another character over
+
+getStringChunk :: (String, String) -> (String,String)
+getStringChunk (newChunk, '"':rest) = (newChunk ++ ['"'], rest)
+getStringChunk (newChunk, next:rest) = getStringChunk (newChunk ++ [next], rest)
+getStringChunk (newChunk, []) = (newChunk, [])
 
 determineToken :: (String, String) -> (Maybe Token, String)
 determineToken ([], more) = (Nothing, more)                                                    -- If all potential is in more, then error
 
 determineToken (potential, more)
-    | ((isAlphabet first || first == ' ') && noPunctuation potential) || isMathOp potential || isLogicOp potential = (Just (Token SYMBOL potential), more)
+    | isSymbol potential = (Just (Token SYMBOL potential), more)
     | (isNum first || (first == '-') && rest /= []) && noDecimal rest && onlyNums rest                           = (Just (Token INTEGER potential), more)
-    | potential `elem` ["(",")","'",":",",",";","[","]","{","}"]                                                 = (Just (Token PUNCTUATION potential), more)
+    | isString potential                                                                                    = (Just (Token STRING potential), more)
+    | isChar potential                                                                                      = (Just (Token CHAR potential), more)
+    | potential `elem` ["(",")","'",":",",",";","[","]","{","}"]                                            = (Just (Token PUNCTUATION potential), more)
     | potential == "="                                                                                           = (Just (Token ASSIGNMENT potential), more)
     | potential == "~"                                                                                           = (Just (Token FUNC potential), more)
     | potential == "@"                                                                                           = (Just (Token MATH potential), more)

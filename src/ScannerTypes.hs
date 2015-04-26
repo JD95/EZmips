@@ -3,7 +3,7 @@ module ScannerTypes where
 import           Data.List
 import           Data.Char
 
-data TYPE = SYMBOL | INTEGER | PUNCTUATION | COMMENT | ASSIGNMENT | FUNC | MATH | ERROR deriving (Show, Eq)
+data TYPE = SYMBOL | INTEGER | PUNCTUATION | COMMENT | ASSIGNMENT | FUNC | MATH | STRING | CHAR | ERROR deriving (Show, Eq)
 data Token = Token TYPE String deriving (Eq)
 
 instance Show Token where show (Token tokenType tokenStr) = (show tokenType) ++" " ++ tokenStr
@@ -28,7 +28,10 @@ isAlphabet :: Char -> Bool
 isAlphabet input = input `elem` (['a'..'z'] `union` ['A'..'Z'])
 
 noPunctuation :: String -> Bool
-noPunctuation input = filter (\a->a `elem` ['(',')','\'',':',',','=',';','+','[',']','{','}']) input == []
+noPunctuation input = filter (\a->a `elem` ['(',')','\'',':',',','=','@',';','~','+','[',']','{','}']) input == []
+
+isSymbol :: String -> Bool
+isSymbol input = (isAlphabet (head input) || (head input) == ' ') && noPunctuation input || isMathOp input || isLogicOp input || input == "end~"
 
 isComment :: String -> Bool
 isComment input = (head input) == '#'
@@ -38,6 +41,13 @@ isMathOp input = input `elem` ["+","-","*","/","%"]
 
 isLogicOp :: String -> Bool
 isLogicOp input = input `elem` ["<",">","<=",">=","==","!="]
+
+isString :: String -> Bool
+isString input = (head input) == '"' && last input == '"' && length input /= 1
+
+isChar :: String -> Bool
+isChar ('\'':_:'\'':[]) = True
+isChar _ = False
 
 {-Utility functions-}
 

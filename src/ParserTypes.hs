@@ -5,6 +5,8 @@ import Data.List
 import Scanner
 import ScannerTypes
 
+data Data = Array String String Int | Global String String String
+
 data Function = Function String [String] [Statement] deriving (Show)
 
 data Fdata = Fdata String [String] (Int,Int,Int) deriving (Show)
@@ -41,6 +43,7 @@ getExpr _ _ [] a
     | otherwise = Nothing --Just ([], [])
 
 getParenExpr = getExpr "(" ")"
+getString = getExpr "\"" "\""
 getBracketExpr = getExpr "[" "]"
 getCurlBraceExpr = getExpr "{" "}"
 getUntil_SemiColon = getExpr "" ";"
@@ -107,9 +110,10 @@ getParenExpr [] a
 {-Tests-}
 test_getExpr :: IO ()
 test_getExpr =
-    case scan "foo: a = @ 4 + 5; return a; end~" of
+    case scan "\"this is a test\"" of
         Just tokens -> do
-            case getUntil_FuncEnd (tail tokens) 0 of
+            putStrLn (show tokens)
+            case getString (tail tokens) 0 of
                 Just (expr,_) -> putStrLn (show expr)
                 Nothing -> putStrLn "Couldn't get expression"
         Nothing -> putStrLn "Bad test string"

@@ -3,12 +3,15 @@ module Main where
 
 
 import System.IO;
+import Data.Text
+import Data.Text.Internal
 
 import Scanner
 import Parser
 import ParserTypes
 import MathConversion
 import Compiler
+import CompilerTypes
 
 
 {--}
@@ -31,17 +34,19 @@ interface :: String -> IO ()
 interface filePath = do
     handle <- openFile "testFile" ReadMode
     ezmips <- hGetContents handle
-    --putStrLn ezmips
     case scan ezmips of
         Just tokens -> do
             --putStrLn (show tokens)
-            case gatherFunction tokens of
-                Just (function,_) -> do
-                    --putStrLn (show function)
-                    case convertFunction function of
-                        Just instructions -> mapM_ (putStrLn) instructions
-                        Nothing -> putStrLn "Could not generate instructions"
-                Nothing -> putStrLn "Could not gather function"
-        Nothing -> putStrLn "Something went wrong in scanning"
+            case gatherData tokens of
+                Just (dataSec, functions) -> do
+                    --putStrLn (show functions)
+                    case gatherFunctions functions of
+                        Just functions' -> do
+                            --putStrLn (show function)
+                            case mergeMaybes (Prelude.map convertFunction functions') of
+                                Just program -> mapM_ (putStrLn) program
+                                Nothing -> putStrLn "Could not compile functions"
+                        Nothing -> putStrLn "Error in function formatting"
+                Nothing -> putStrLn "Error in reading data section"
+        Nothing -> putStrLn "Bad syntax...somewhere"
     hClose handle
-    

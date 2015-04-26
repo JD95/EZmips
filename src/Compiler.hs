@@ -67,11 +67,11 @@ convertFunction :: Function -> Maybe [String]
 
 convertFunction (Function "main" _ body) = do
     let endInstructions = ["li $v0, 10", "syscall"]
-    instructions <- mergeInstructions (map convertStatement body)
+    instructions <- mergeMaybes (map convertStatement body)
     Just (["main" ++ ":"] ++ instructions ++ ["end_"++"main"++":"] ++ endInstructions)
 
 convertFunction (Function name args body) = do
-    instructions <- mergeInstructions (map convertStatement body)
+    instructions <- mergeMaybes (map convertStatement body)
     Just ([name ++ ":"]++pushStack ++ (moveArgs args (length args)) ++ instructions ++ ["end_"++name++":"] ++ popStack)
 
 
