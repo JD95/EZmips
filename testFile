@@ -8,6 +8,12 @@ main:
     a = 1;
     b = 2;
     c = @ a + b;
+
+    while(c == 5)
+    {
+        return;
+    }
+    
     ~foo;
 end~
 

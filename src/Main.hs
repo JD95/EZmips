@@ -35,7 +35,7 @@ interface filePath = do
     --putStrLn ezmips
     case scan ezmips of
         Just tokens -> do
-            --putStrLn (show tokens)
+            putStrLn (show tokens)
             case gatherData tokens of
                 Just (dataSec, functions) -> do
                     --putStrLn (show functions)

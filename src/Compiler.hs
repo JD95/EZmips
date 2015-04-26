@@ -85,13 +85,42 @@ convertStatement (Return (Token SYMBOL "") (Token SYMBOL end)) =
 convertStatement (Return (Token SYMBOL sym) (Token SYMBOL end)) =
     Just [("move $v0, " ++ sym),("j "++ end)] -- Move value to return, then jump to end of function
 
-
-
 convertStatement (FunCALL (Token SYMBOL name) args) = do
     loadArgs <- loadFuncArgs args 0
     let call = "jal " ++ name
     Just (loadArgs ++ [call])
-    
+
+convertStatement (If name (Condition (Token SYMBOL var) (Token SYMBOL logic) (Token INTEGER num)) body) = do
+    let label = name ++ ":"
+    let value = "li $t0, " ++ num
+    let end = "end_" ++ name ++":"
+    condition <- case logic of -- Using negative logic here to make the brancing easier
+                    "<" -> Just ("blt "++ var ++ ", " ++ value++", end_"++name)
+                    ">" -> Just ("bgt "++ var ++ ", " ++ value++", end_"++name)
+                    "<=" -> Just ("bge "++ var ++ ", " ++ value++", end_"++name)
+                    ">=" -> Just ("ble "++ var ++ ", " ++ value++", end_"++name)
+                    "==" -> Just ("bne "++ var ++ ", " ++ value++", end_"++name)
+                    "!=" -> Just ("beq "++ var ++ ", " ++ value++", end_"++name)
+                    _ -> Nothing
+    body' <- mergeMaybes (map convertStatement body)
+    Just ([label] ++ [value] ++ [condition] ++ body' ++ [end])
+
+convertStatement (WhileLoop name (Condition (Token SYMBOL var) (Token SYMBOL logic) (Token INTEGER num)) body) = do
+    let label = name ++ ":"
+    let value = "li $t0, " ++ num
+    let end = "end_" ++ name ++":"
+    let loop = "j "++ name
+    condition <- case logic of -- Using negative logic here to make the brancing easier
+                    "<" -> Just ("blt "++ var ++ ", " ++ value++", end_"++name)
+                    ">" -> Just ("bgt "++ var ++ ", " ++ value++", end_"++name)
+                    "<=" -> Just ("bge "++ var ++ ", " ++ value++", end_"++name)
+                    ">=" -> Just ("ble "++ var ++ ", " ++ value++", end_"++name)
+                    "==" -> Just ("bne "++ var ++ ", " ++ value++", end_"++name)
+                    "!=" -> Just ("beq "++ var ++ ", " ++ value++", end_"++name)
+                    _ -> Nothing
+    body' <- mergeMaybes (map convertStatement body)
+    Just ([label] ++ [value] ++ [condition] ++ body' ++ [loop] ++ [end])
+
 convertStatement _ = Nothing
 
 convertFunction :: Function -> Maybe [String]
@@ -155,7 +184,7 @@ test_treeToMips = do
 test_convertStatement :: IO ()
 test_convertStatement = do
     case scan "return a;" of
-        Just tokens -> case processStatement tokens (Fdata "main" [] (0,0,0)) of
+        Just tokens -> case processStatement tokens (Fdata "main" [] ("",0,0,0)) of
                             Just (statement,_) -> do
                                 putStrLn (show statement)
                                 case convertStatement statement of

@@ -28,7 +28,7 @@ isAlphabet :: Char -> Bool
 isAlphabet input = input `elem` (['a'..'z'] `union` ['A'..'Z'])
 
 noPunctuation :: String -> Bool
-noPunctuation input = filter (\a->a `elem` ['(',')','\'',':',',','=','@',';','~','+','[',']','{','}']) input == []
+noPunctuation input = filter (\a->a `elem` ['(',')','\'',':',',','=','@',';','~','+','[',']','{','}','<','>','!']) input == []
 
 isSymbol :: String -> Bool
 isSymbol input = (isAlphabet (head input) || (head input) == ' ') && noPunctuation input || isMathOp input || isLogicOp input || input == "end~"
@@ -40,7 +40,7 @@ isMathOp :: String -> Bool
 isMathOp input = input `elem` ["+","-","*","/","%"]
 
 isLogicOp :: String -> Bool
-isLogicOp input = input `elem` ["<",">","<=",">=","==","!="]
+isLogicOp input = input `elem` ["<=",">=","==","!="] || input `elem` ["<",">"]
 
 isString :: String -> Bool
 isString input = (head input) == '"' && last input == '"' && length input /= 1

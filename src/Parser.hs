@@ -1,5 +1,7 @@
 module Parser where
 
+import Data.Char
+
 import Scanner
 import ScannerTypes
 
@@ -49,7 +51,7 @@ gatherFunction ((Token SYMBOL name):rest) = do
     (args, more) <- getUntil_Colon rest 0
     let (argRegs,newTable) = argsToReg (init args) [] -- Assigns save registers to the arguements
     args' <- symbolsToString argRegs                  -- Extracts values from tokens
-    (body, nextFunc) <- gatherStatements more (Fdata name newTable (0,0,0))
+    (body, nextFunc) <- gatherStatements more (Fdata name newTable ("",0,0,0))
     Just ((Function name args' body), nextFunc)
 
 gatherFunction _ = Nothing
@@ -164,27 +166,49 @@ processStatement ((Token SYMBOL "return"):(Token SYMBOL sym):(Token PUNCTUATION 
                        newTable = (addToTable sym table)
                    in  processStatement tokens (Fdata name newTable counts)
 
+-- Return without loading a return value
 processStatement ((Token SYMBOL "return"):(Token PUNCTUATION ";"):[]) (Fdata name table counts) = do
    Just ((Return (Token SYMBOL "") (Token SYMBOL ("end_"++name))), (Fdata name table counts))
 
+-- Free function call, will not load a return value
 processStatement ((Token FUNC "~"):(Token SYMBOL fname):more) fdata = do
     (args,_) <- getUntil_SemiColon more 0 -- Gets args and semi colon
     Just ((FunCALL (Token SYMBOL fname) (init args)), fdata)
+
+-- IF statement
+processStatement ((Token SYMBOL "if"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):value:(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest) (Fdata name table (cName, ifs, whiles, fors)) = do
+    let inner = (init rest) ++ [(Token SYMBOL "end~")] -- To make the gather statments end
+    let newCName = cName++"_if"++[(intToDigit ifs)]
+    let ifName = name++ newCName
+    (innerStatements, _) <- gatherStatements inner (Fdata name table (newCName,ifs, whiles, fors)) -- Any other control statements in this one will have names in relation to it eg. func_if0_if1
+    Just ((If ifName (Condition (Token SYMBOL var) (Token SYMBOL logic) value) innerStatements), (Fdata name table (newCName, ifs+1, whiles, fors)))
+    --Just ((If "test" (Condition (Token SYMBOL "") (Token SYMBOL "") (Token SYMBOL "")) []), (Fdata "" [] (0,0,0))) -- For testing
+
+-- IF statement
+processStatement ((Token SYMBOL "while"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):value:(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest) (Fdata name table (cName, ifs, whiles, fors)) = do
+    let inner = (init rest) ++ [(Token SYMBOL "end~")] -- To make the gather statments end
+    let newCName = cName++"_if"++[(intToDigit ifs)]
+    let wName = name++newCName
+    (innerStatements, _) <- gatherStatements inner (Fdata name table (newCName,ifs, whiles, fors)) -- Any other control statements in this one will have names in relation to it eg. func_if0_if1
+    Just ((WhileLoop wName (Condition (Token SYMBOL var) (Token SYMBOL logic) value) innerStatements), (Fdata name table (newCName,ifs, whiles+1, fors)))
+    --Just ((If "test" (Condition (Token SYMBOL "") (Token SYMBOL "") (Token SYMBOL "")) []), (Fdata "" [] (0,0,0))) -- For testing
 
 processStatement _ _ = Nothing
 
 {-Tests-}
 test_ProcessStatement :: IO ()
 test_ProcessStatement = do
-    case scan "return 5;" of
-        Just tokens -> case processStatement tokens (Fdata "main" ["b","a"] (0,0,0)) of
-                            Just (statement,_) -> putStrLn (show statement)
-                            Nothing -> putStrLn "Could not process Statement"
+    case scan "if(i<5){if(i > 5){return;}}" of
+        Just tokens -> do
+            putStrLn (show tokens)
+            case processStatement tokens (Fdata "main" ["b","a"] ("",0,0,0)) of
+                Just (statement,_) -> putStrLn (show statement)
+                Nothing -> putStrLn "Could not process Statement"
         Nothing -> putStrLn "Bad Test string"
 
 test_getStatement :: IO ()
 test_getStatement = do
-    case scan "[arr 5] = 25;" of
+    case scan "if(i<5){return;} a + b;" of
         Just tokens -> do
             putStrLn (show tokens)
             case getStatement tokens  of
@@ -199,7 +223,7 @@ test_gatherStatements = do
     case scan "a = 1; b = 1; c = 2; d = @ (a + b) / c; return d; end~" of
         Just tokens -> do
             --putStrLn (show tokens)
-            case gatherStatements tokens (Fdata "main" [] (0,0,0)) of
+            case gatherStatements tokens (Fdata "main" [] ("",0,0,0)) of
                 Just (statements,rest) -> do
                     putStrLn (show rest)
                     mapM_ (putStrLn . show) statements

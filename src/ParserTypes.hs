@@ -9,9 +9,10 @@ data Data = Array String String Int | Global String String String
 
 data Function = Function String [String] [Statement] deriving (Show)
 
-data Fdata = Fdata String [String] (Int,Int,Int) deriving (Show)
+data Fdata = Fdata String [String] (String, Int,Int,Int) deriving (Show)
 
-data Statement = Assignment [Token] [Token] | FunCALL Token [Token] | Return Token Token | Ending Token | ForLoop Condition [Statement] | WhileLoop Condition [Statement] deriving (Show)
+data Statement = Assignment [Token] [Token] | FunCALL Token [Token] | Return Token Token | Ending Token |
+                If String Condition [Statement] | WhileLoop String Condition [Statement] | ForLoop  String Token [Statement] deriving (Show)
 
 data Condition = Condition Token Token Token deriving (Show)
 
@@ -93,6 +94,21 @@ argsToReg (token:more) table =
         (token:rest, newTable)
 
 argsToReg [] table = ([], table)
+
+{--- The subtrees are converted from Maybe values to values ---------------------------------}
+mergeMaybes :: [Maybe [a]] -> Maybe [a]
+mergeMaybes [] = Just []
+mergeMaybes [value] = case value of
+                           Just value' -> Just value'
+                           Nothing     -> Nothing
+
+mergeMaybes (value:rest) =
+    let values = mergeMaybes rest in
+    case values of
+        Just values' -> case value of
+                             Just value' -> Just (value'++ values')
+                             Nothing  -> Nothing
+        Nothing      -> Nothing
 
 {-Tests-}
 test_getExpr :: IO ()
