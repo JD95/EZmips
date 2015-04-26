@@ -7,7 +7,7 @@ char Y = 'y';
 main:
     a = 1;
     b = 2;
-    c = ~ math a b;
+    c = @ a + b;
 end~
 
 math a b:

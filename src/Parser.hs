@@ -47,7 +47,7 @@ gatherFunctions input = do
 gatherFunction :: [Token] -> Maybe (Function, [Token])
 gatherFunction ((Token SYMBOL name):rest) = do
     (args, more) <- getUntil_Colon rest 0
-    let (argRegs,newTable) = argsToReg (init args) [] -- Assigns registers to the symbols
+    let (argRegs,newTable) = argsToReg (init args) [] -- Assigns save registers to the arguements
     args' <- symbolsToString argRegs                  -- Extracts values from tokens
     (body, nextFunc) <- gatherStatements more (Fdata name newTable (0,0,0))
     Just ((Function name args' body), nextFunc)

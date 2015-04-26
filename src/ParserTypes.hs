@@ -92,7 +92,7 @@ argsToReg (token:more) table =
     let (rest, newTable) = argsToReg more table in
         (token:rest, newTable)
 
-argsToReg [] _ = ([],[])
+argsToReg [] table = ([], table)
 
 {-Tests-}
 test_getExpr :: IO ()
