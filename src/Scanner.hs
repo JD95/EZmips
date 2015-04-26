@@ -32,9 +32,9 @@ determineToken :: (String, String) -> (Maybe Token, String)
 determineToken ([], more) = (Nothing, more)                                                    -- If all potential is in more, then error
 
 determineToken (potential, more)
-    | ((isAlphabet first || first == ' ') && noPunctuation potential) || isMathOp potential                      = (Just (Token SYMBOL potential), more)
-    | (isNum first || (first == '-') && rest /= []) && noDecimal rest && onlyNums rest                          = (Just (Token INTEGER potential), more)
-    | potential `elem` ["(",")","'",":",",",";"]                                                                    = (Just (Token PUNCTUATION potential), more)
+    | ((isAlphabet first || first == ' ') && noPunctuation potential) || isMathOp potential || isLogicOp potential = (Just (Token SYMBOL potential), more)
+    | (isNum first || (first == '-') && rest /= []) && noDecimal rest && onlyNums rest                           = (Just (Token INTEGER potential), more)
+    | potential `elem` ["(",")","'",":",",",";","[","]","{","}"]                                                 = (Just (Token PUNCTUATION potential), more)
     | potential == "="                                                                                           = (Just (Token ASSIGNMENT potential), more)
     | potential == "~"                                                                                           = (Just (Token FUNC potential), more)
     | potential == "@"                                                                                           = (Just (Token MATH potential), more)

@@ -4,16 +4,26 @@ module Main where
 
 import System.IO;
 
-import Scanner;
-import MathParsing
+import Scanner
+import Parser
+import ParserTypes
+import MathConversion
 import Compiler
 
 
 {--}
 main :: IO ()
 main = do
-    test_treeToMips
+    --test_getExpr
+    --test_treeToMips
     --test_ParseMath_as
+    --test_ProcessStatement
+    --test_replaceVars
+    --test_convertStatement
+    --test_getStatement
+    --test_gatherFunction
+    test_convertFunction
+    --test_pushStack
     --interface "EZmips: "
 
 interface :: String -> IO ()

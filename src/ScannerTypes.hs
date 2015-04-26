@@ -28,10 +28,27 @@ isAlphabet :: Char -> Bool
 isAlphabet input = input `elem` (['a'..'z'] `union` ['A'..'Z'])
 
 noPunctuation :: String -> Bool
-noPunctuation input = filter (\a->a `elem` ['.','(',')','\'',',',':']) input == []
+noPunctuation input = filter (\a->a `elem` ['(',')','\'',':',',',';','[',']','{','}']) input == []
 
 isComment :: String -> Bool
 isComment input = (head input) == '#'
 
 isMathOp :: String -> Bool
 isMathOp input = input `elem` ["+","-","*","/","%"]
+
+isLogicOp :: String -> Bool
+isLogicOp input = input `elem` ["<",">","<=",">=","==","!="]
+
+{-Utility functions-}
+
+symbolsToString :: [Token] -> Maybe [String]
+
+symbolsToString [(Token SYMBOL value)] = Just [value]
+
+symbolsToString ((Token SYMBOL value):more) = do
+    rest <- symbolsToString more
+    Just (value:rest)
+
+symbolsToString [] = Just []
+
+symbolsToString _ = Nothing

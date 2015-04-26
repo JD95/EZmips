@@ -1,8 +1,16 @@
 module Compiler where
 
+import Data.List
+import Data.Char
+
 import Scanner
-import MathParsing
+import ScannerTypes
+
+import Parser
 import ParserTypes
+
+import CompilerTypes
+import MathConversion
 
 treeToMips:: MathTree -> Int -> Maybe (String, [String], Int)
 
@@ -17,31 +25,92 @@ treeToMips (Leaf a) c = Just (a,[],c)
 
 convertTree :: String -> MathTree -> MathTree -> Int -> Maybe (String, [String], Int)
 convertTree op left right c = do
-    (right', b, tNum) <- treeToMips right c
-    (left', a, tNum') <- treeToMips left tNum
+    (left', a, tNum) <- treeToMips left c
+    (right', b, tNum') <- treeToMips right tNum
     let tReg = "$t"++(show (tNum'+1))
     let instruction = [op ++ " " ++ tReg ++", " ++ left' ++ ", " ++ right']
     Just (tReg,a ++ b ++ instruction , tNum'+ 1)
 
 divisionOp :: String -> MathTree -> MathTree -> Int -> Maybe (String, [String], Int)
 divisionOp op left right c = do
-    (right', b, tNum) <- treeToMips right c
-    (left', a, tNum') <- treeToMips left tNum
+    (left', a, tNum) <- treeToMips left c
+    (right', b, tNum') <- treeToMips right tNum
     let tReg = "$t"++(show (tNum'+1))
     let instruction1 = ["div" ++ " " ++ left' ++ ", " ++ right']
     let instruction2 = [op ++ " " ++ tReg]
-    Just (tReg,a ++ b ++ instruction1 ++ instruction2 , tNum'+ 1)
+    Just (tReg, a ++ b ++ instruction1 ++ instruction2 , tNum'+ 1)
+
+{- Converting Statements-}
+convertStatement :: Statement -> Maybe [String]
+
+convertStatement (Assignment [(Token SYMBOL var)] [(Token INTEGER num)]) = do
+    let assign = "li " ++ var ++ ", " ++ num
+    Just ([assign])
+
+convertStatement (Assignment [(Token SYMBOL var)] math) = do
+    tree <- convertMath_as ([], math)
+    (result, instructions, _) <- treeToMips tree (-1)
+    let assign = "mov " ++ var ++ ", " ++ result
+    Just (instructions ++ [assign])
+
+convertStatement (Return (Token INTEGER num)) =
+    let load = "li $t0, " ++ num
+        return' = "mov $v0, $t0"
+    in Just [load, return']
+
+convertStatement (Return (Token SYMBOL sym)) =
+    Just [("mov $v0, " ++ sym)]
+
+convertStatement _ = Nothing
+
+convertFunction :: Function -> Maybe [String]
+
+convertFunction (Function "main" _ body) = do
+    let endInstructions = ["li $v0, 10", "syscall"]
+    instructions <- mergeInstructions (map convertStatement body)
+    Just (["main" ++ ":"] ++ instructions ++ ["end_"++"main"++":"] ++ endInstructions)
+
+convertFunction (Function name args body) = do
+    instructions <- mergeInstructions (map convertStatement body)
+    Just ([name ++ ":"]++pushStack ++ (moveArgs args (length args)) ++ instructions ++ ["end_"++name++":"] ++ popStack)
+
+
+
+moveArgs :: [String] -> Int -> [String]
+moveArgs [] _ = []
+moveArgs args orgLen =
+    let rest = moveArgs (tail args) orgLen in
+        ["mov " ++ (head args) ++ ", $a" ++ [intToDigit (orgLen -(length args))]] ++ rest
+
+
+pushStack :: [String]
+pushStack = let decStack = "addi $sp, $sp, -4"
+                storeRa  = "sw $ra, 0($sp)"
+                sw       = \ a -> "sw " ++ a ++ ", 0($sp)"
+                saves    = ["$s" ++ (show x) | x <- [0..7]]
+                saveSP   = map sw saves
+             in tail (intersperse decStack ("a":storeRa:saveSP))
+
+popStack :: [String]
+popStack = let augStack  = "addi $sp, $sp, 4"
+               loadRa   = "lw $ra, 0($sp)"
+               lw       = \ a -> "lw " ++ a ++ ", 0($sp)"
+               saves    = (map (\x-> "$s" ++ show x)  [0..7])
+               loadSP   = map lw (reverse  saves)
+            in (tail (intersperse augStack ("a":loadSP ++ [loadRa])) ++ ["jr $ra"])
+
+
 
 {-Tests-}
 
 test_treeToMips :: IO ()
 test_treeToMips = do
-   let input = "s0 + (s1 - s2) / s3"
+   let input = "s0 + s1"
    putStrLn input
    case scan input of
        Just expr ->  do
            putStrLn (show expr)
-           case parseMath_as ([],expr) of
+           case convertMath_as ([],expr) of
              Just mathTree -> do
                  putStrLn (show mathTree)
                  case (treeToMips mathTree (-1)) of
@@ -52,3 +121,34 @@ test_treeToMips = do
              Nothing -> putStrLn "Tree didn't Parse"
        Nothing -> putStrLn "Expression didn't scan"
 
+test_convertStatement :: IO ()
+test_convertStatement = do
+    case scan "return a;" of
+        Just tokens -> case processStatement tokens (Fdata "main" [] (0,0,0)) of
+                            Just (statement,_) -> do
+                                putStrLn (show statement)
+                                case convertStatement statement of
+                                    Just instructions -> mapM_ (putStrLn) instructions
+                                    Nothing -> putStrLn "Could not generate instructions"
+                            Nothing -> putStrLn "Could not process Statement"
+        Nothing -> putStrLn "Bad Test string"
+
+test_convertFunction :: IO ()
+test_convertFunction = do
+    let input = "main:  d = @ (a + b) / c; return d; end~"
+    putStrLn input
+    case scan input of
+        Just tokens -> do
+            putStrLn (show tokens)
+            case gatherFunction tokens of
+                Just (function,_) -> do
+                    --putStrLn (show function)
+                    case convertFunction function of
+                        Just instructions -> mapM_ (putStrLn) instructions
+                        Nothing -> putStrLn "Could not generate instructions"
+                Nothing -> putStrLn "Could not gather function"
+        Nothing -> putStrLn "Bad Test string"
+
+test_pushStack:: IO ()
+test_pushStack = do
+    mapM_ (putStrLn) popStack
