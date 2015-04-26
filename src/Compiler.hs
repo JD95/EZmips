@@ -50,16 +50,16 @@ convertStatement (Assignment [(Token SYMBOL var)] [(Token INTEGER num)]) = do
 convertStatement (Assignment [(Token SYMBOL var)] math) = do
     tree <- convertMath_as ([], math)
     (result, instructions, _) <- treeToMips tree (-1)
-    let assign = "mov " ++ var ++ ", " ++ result
+    let assign = "move " ++ var ++ ", " ++ result
     Just (instructions ++ [assign])
 
 convertStatement (Return (Token INTEGER num)) =
     let load = "li $t0, " ++ num
-        return' = "mov $v0, $t0"
+        return' = "move $v0, $t0"
     in Just [load, return']
 
 convertStatement (Return (Token SYMBOL sym)) =
-    Just [("mov $v0, " ++ sym)]
+    Just [("move $v0, " ++ sym)]
 
 convertStatement _ = Nothing
 
@@ -80,7 +80,7 @@ moveArgs :: [String] -> Int -> [String]
 moveArgs [] _ = []
 moveArgs args orgLen =
     let rest = moveArgs (tail args) orgLen in
-        ["mov " ++ (head args) ++ ", $a" ++ [intToDigit (orgLen -(length args))]] ++ rest
+        ["move " ++ (head args) ++ ", $a" ++ [intToDigit (orgLen -(length args))]] ++ rest
 
 
 pushStack :: [String]
