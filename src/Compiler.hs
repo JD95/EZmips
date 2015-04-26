@@ -118,7 +118,7 @@ popStack = let augStack  = "addi $sp, $sp, 4"
                lw       = \ a -> "lw " ++ a ++ ", 0($sp)"
                saves    = (map (\x-> "$s" ++ show x)  [0..7])
                loadSP   = map lw (reverse  saves)
-            in (tail (intersperse augStack ("a":loadSP ++ [loadRa])) ++ ["jr $ra"])
+            in (intersperse augStack (loadSP ++ [loadRa])) ++ [augStack] ++ ["jr $ra"]
 
 
 
