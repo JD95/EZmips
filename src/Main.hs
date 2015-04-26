@@ -21,8 +21,9 @@ main = do
     --test_replaceVars
     --test_convertStatement
     --test_getStatement
-    --test_gatherFunction
-    test_convertFunction
+    test_gatherFunction
+    --test_gatherStatements
+    --test_convertFunction
     --test_pushStack
     --interface "EZmips: "
 

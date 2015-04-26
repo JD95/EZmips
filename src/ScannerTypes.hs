@@ -28,7 +28,7 @@ isAlphabet :: Char -> Bool
 isAlphabet input = input `elem` (['a'..'z'] `union` ['A'..'Z'])
 
 noPunctuation :: String -> Bool
-noPunctuation input = filter (\a->a `elem` ['(',')','\'',':',',',';','[',']','{','}']) input == []
+noPunctuation input = filter (\a->a `elem` ['(',')','\'',':',',','=',';','[',']','{','}']) input == []
 
 isComment :: String -> Bool
 isComment input = (head input) == '#'

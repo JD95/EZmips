@@ -12,7 +12,6 @@ gatherFunction ((Token SYMBOL name):rest) = do
     (body, nextFunc) <- gatherStatements more (Fdata name args'(0,0,0))
     Just ((Function name args' body), nextFunc)
 
-
 gatherFunction _ = Nothing
 
 gatherStatements :: [Token] -> Fdata -> Maybe ([Statement], [Token])
@@ -141,7 +140,7 @@ test_getStatement = do
 
 test_gatherStatements :: IO ()
 test_gatherStatements = do
-    case scan "a = 25; if (a < 10){return 6;} end~" of
+    case scan "a = 1; b = 1; c = 2; d = @ (a + b) / c; return d; end~" of
         Just tokens -> do
             --putStrLn (show tokens)
             case gatherStatements tokens (Fdata "main" [] (0,0,0)) of
@@ -153,9 +152,9 @@ test_gatherStatements = do
 
 test_gatherFunction :: IO ()
 test_gatherFunction = do
-    case scan "foo a b c: a = 25; return a; end~" of
+    case scan "main: a=1; b = 1; c = 2; d = @ (a + b) / c; return d; end~" of
         Just tokens -> do
-            --putStrLn (show tokens)
+            putStrLn (show tokens)
             case gatherFunction tokens of
                 Just (function, rest) -> do
                     putStrLn (show rest)

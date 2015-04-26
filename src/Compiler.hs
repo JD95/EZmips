@@ -135,11 +135,11 @@ test_convertStatement = do
 
 test_convertFunction :: IO ()
 test_convertFunction = do
-    let input = "main:  d = @ (a + b) / c; return d; end~"
+    let input = "main: a = 1; b = 1; c = 2; d = @ (a + b) / c; return d; end~"
     putStrLn input
     case scan input of
         Just tokens -> do
-            putStrLn (show tokens)
+            --putStrLn (show tokens)
             case gatherFunction tokens of
                 Just (function,_) -> do
                     --putStrLn (show function)

@@ -4,6 +4,8 @@ import Scanner
 import ParserTypes
 import ScannerTypes
 
+import CompilerTypes
+
 {-
     Grammar for Math Expressions
     <as>  -> <md> + <as> | <md> - <as> | <md>
