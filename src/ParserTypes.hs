@@ -79,7 +79,20 @@ replaceMathVars (token:more) table =
 
 replaceMathVars [] _ = ([],[])
 
+argsToReg :: [Token] -> [String] -> ([Token], [String])
+argsToReg ((Token SYMBOL var):more) table = 
+    let (reg, table')    = assignReg var table
+        (rest, newTable) = argsToReg more table'
+    in ((Token SYMBOL reg):rest, newTable)
+argsToReg ((Token INTEGER num): more) table =
+    let (rest, table') = argsToReg more table in
+        (((Token INTEGER num):rest),table')
 
+argsToReg (token:more) table =
+    let (rest, newTable) = argsToReg more table in
+        (token:rest, newTable)
+
+argsToReg [] _ = ([],[])
 
 {-Tests-}
 test_getExpr :: IO ()

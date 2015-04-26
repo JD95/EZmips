@@ -40,6 +40,21 @@ divisionOp op left right c = do
     let instruction2 = [op ++ " " ++ tReg]
     Just (tReg, a ++ b ++ instruction1 ++ instruction2 , tNum'+ 1)
 
+
+loadFuncArgs :: [Token] -> Int -> Maybe [String]
+loadFuncArgs ((Token SYMBOL arg):more) argNum = do
+    let loadArg = "move $a" ++ [(intToDigit argNum)] ++ ", " ++ arg
+    rest <- loadFuncArgs more (argNum + 1)
+    Just (loadArg:rest)
+
+loadFuncArgs ((Token INTEGER arg):more) argNum = do
+    let loadArg = "li $a" ++ [(intToDigit argNum)] ++ ", " ++ arg
+    rest <- loadFuncArgs more (argNum + 1)
+    Just (loadArg:rest)
+    
+loadFuncArgs [] _ = Just []
+loadFuncArgs _ _ = Nothing
+
 {- Converting Statements-}
 convertStatement :: Statement -> Maybe [String]
 
@@ -47,11 +62,17 @@ convertStatement (Assignment [(Token SYMBOL var)] [(Token INTEGER num)]) = do
     let assign = "li " ++ var ++ ", " ++ num
     Just ([assign])
 
-convertStatement (Assignment [(Token SYMBOL var)] math) = do
+convertStatement (Assignment [(Token SYMBOL var)] ((Token MATH _):math)) = do
     tree <- convertMath_as ([], math)
     (result, instructions, _) <- treeToMips tree (-1)
     let assign = "move " ++ var ++ ", " ++ result
     Just (instructions ++ [assign])
+
+convertStatement (Assignment [(Token SYMBOL var)] ((Token FUNC _):(Token SYMBOL fname):args)) = do
+    loadArgs <- loadFuncArgs args 0
+    let call = "jal " ++ fname
+    let assign = "move " ++ var ++ ", " ++ "$v0"
+    Just (loadArgs ++ [call] ++ [assign])
 
 convertStatement (Return (Token INTEGER num)) =
     let load = "li $t0, " ++ num

@@ -126,7 +126,7 @@ processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token MATH _):more) (
     case lookUpVar sym table of
         Just reg -> case getUntil_SemiColon more 0 of
                         Just (math,_) -> let (math', newTable) = replaceMathVars math table in
-                                         Just ((Assignment [(Token SYMBOL reg)] (init math')), (Fdata name table counts))
+                                         Just ((Assignment [(Token SYMBOL reg)] ((Token MATH "@"):init math')), (Fdata name newTable counts))
                         Nothing -> Nothing
         Nothing -> let tokens = ((Token SYMBOL sym):(Token ASSIGNMENT "="):(Token MATH "@"):more)
                        newTable = (addToTable sym table)
@@ -134,13 +134,14 @@ processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token MATH _):more) (
 
 
 -- Case of assignment to return of a function
-processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token FUNC _):more) (Fdata name table counts) =
+processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token FUNC _):(Token SYMBOL fname):more) (Fdata name table counts) =
     case lookUpVar sym table of
         Just reg -> case getUntil_SemiColon more 0 of
-                        Just (math,_) -> let (math', newTable) = replaceMathVars math table in
-                                         Just ((Assignment [(Token SYMBOL reg)] (init math')), (Fdata name table counts))
-                        Nothing -> Nothing
-        Nothing -> let tokens = ((Token SYMBOL sym):(Token ASSIGNMENT "="):(Token MATH "@"):more)
+                        Just (args,_) -> let (args', newTable) = argsToReg args table in
+                                                    -- The name is the first arguement of the function
+                                                    Just ((Assignment [(Token SYMBOL reg)] ((Token FUNC "~"):(Token SYMBOL fname):init args')), (Fdata name newTable counts))
+                        _  -> Nothing
+        Nothing -> let tokens = ((Token SYMBOL sym):(Token ASSIGNMENT "="):(Token FUNC "~"):(Token SYMBOL fname):more)
                        newTable = (addToTable sym table)
                    in  processStatement tokens (Fdata name newTable counts)
 

@@ -34,9 +34,10 @@ interface :: String -> IO ()
 interface filePath = do
     handle <- openFile "testFile" ReadMode
     ezmips <- hGetContents handle
+    putStrLn ezmips
     case scan ezmips of
         Just tokens -> do
-            putStrLn (show tokens)
+            --putStrLn (show tokens)
             case gatherData tokens of
                 Just (dataSec, functions) -> do
                     --putStrLn (show functions)
