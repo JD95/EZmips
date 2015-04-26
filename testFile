@@ -8,9 +8,16 @@ main:
     a = 1;
     b = 2;
     c = @ a + b;
+    ~foo;
 end~
 
 math a b:
     c = @ a + b;
     return c;
+end~
+
+foo:
+    a = 1;
+    return a;
+    b = 2;
 end~

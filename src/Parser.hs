@@ -154,15 +154,22 @@ processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token SYMBOL _):more)
 
 -- Returning an immediate number value
 processStatement ((Token SYMBOL "return"):(Token INTEGER num):(Token PUNCTUATION ";"):[]) (Fdata name table count) =
-    Just ((Return (Token INTEGER num)), (Fdata name table count))
+    Just ((Return (Token INTEGER num) (Token SYMBOL ("end_"++name))), (Fdata name table count))
 
 -- Returning whats in a save register
 processStatement ((Token SYMBOL "return"):(Token SYMBOL sym):(Token PUNCTUATION ";"):[]) (Fdata name table counts) = do
     case lookUpVar sym table of
-        Just reg -> Just ((Return (Token SYMBOL reg)), (Fdata name table counts))
+        Just reg -> Just ((Return (Token SYMBOL reg) (Token SYMBOL ("end_"++name))), (Fdata name table counts))
         Nothing -> let tokens = ((Token SYMBOL "return"):(Token SYMBOL sym):(Token PUNCTUATION ";"):[])
                        newTable = (addToTable sym table)
                    in  processStatement tokens (Fdata name newTable counts)
+
+processStatement ((Token SYMBOL "return"):(Token PUNCTUATION ";"):[]) (Fdata name table counts) = do
+   Just ((Return (Token SYMBOL "") (Token SYMBOL ("end_"++name))), (Fdata name table counts))
+
+processStatement ((Token FUNC "~"):(Token SYMBOL fname):more) fdata = do
+    (args,_) <- getUntil_SemiColon more 0 -- Gets args and semi colon
+    Just ((FunCALL (Token SYMBOL fname) (init args)), fdata)
 
 processStatement _ _ = Nothing
 

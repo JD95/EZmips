@@ -32,7 +32,7 @@ interface :: String -> IO ()
 interface filePath = do
     handle <- openFile "testFile" ReadMode
     ezmips <- hGetContents handle
-    putStrLn ezmips
+    --putStrLn ezmips
     case scan ezmips of
         Just tokens -> do
             --putStrLn (show tokens)

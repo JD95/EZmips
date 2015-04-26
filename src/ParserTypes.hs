@@ -11,7 +11,7 @@ data Function = Function String [String] [Statement] deriving (Show)
 
 data Fdata = Fdata String [String] (Int,Int,Int) deriving (Show)
 
-data Statement = Assignment [Token] [Token] | Return Token | Ending Token | ForLoop Condition [Statement] | WhileLoop Condition [Statement] deriving (Show)
+data Statement = Assignment [Token] [Token] | FunCALL Token [Token] | Return Token Token | Ending Token | ForLoop Condition [Statement] | WhileLoop Condition [Statement] deriving (Show)
 
 data Condition = Condition Token Token Token deriving (Show)
 

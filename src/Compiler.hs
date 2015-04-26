@@ -74,14 +74,24 @@ convertStatement (Assignment [(Token SYMBOL var)] ((Token FUNC _):(Token SYMBOL 
     let assign = "move " ++ var ++ ", " ++ "$v0"
     Just (loadArgs ++ [call] ++ [assign])
 
-convertStatement (Return (Token INTEGER num)) =
+convertStatement (Return (Token INTEGER num) (Token SYMBOL end)) =
     let load = "li $t0, " ++ num
         return' = "move $v0, $t0"
-    in Just [load, return']
+    in Just [load, return',("j " ++ end)] -- Store number in return value, then jump to end of function
 
-convertStatement (Return (Token SYMBOL sym)) =
-    Just [("move $v0, " ++ sym)]
+convertStatement (Return (Token SYMBOL "") (Token SYMBOL end)) =
+    Just [("j "++ end)] -- Move value to return, then jump to end of function
 
+convertStatement (Return (Token SYMBOL sym) (Token SYMBOL end)) =
+    Just [("move $v0, " ++ sym),("j "++ end)] -- Move value to return, then jump to end of function
+
+
+
+convertStatement (FunCALL (Token SYMBOL name) args) = do
+    loadArgs <- loadFuncArgs args 0
+    let call = "jal " ++ name
+    Just (loadArgs ++ [call])
+    
 convertStatement _ = Nothing
 
 convertFunction :: Function -> Maybe [String]
