@@ -16,7 +16,9 @@ scan input = do
 extractTokens :: String -> [Token] -> [Token]
 extractTokens [] tokenList = tokenList
 extractTokens (' ':input) tokenList = extractTokens input tokenList                             -- Pull off whitespace until next token
-extractTokens ('#':input) tokenList = (Token COMMENT ("#"++input)):tokenList
+extractTokens ('\n':input) tokenList = extractTokens input tokenList                             -- Pull off whitespace until next token
+extractTokens ('\t':input) tokenList = extractTokens input tokenList                             -- Pull off whitespace until next token
+--extractTokens ('#':input) tokenList = (Token COMMENT ("#"++input)):tokenList
 extractTokens input tokenList = let (newToken, rest) = getNextChunk ([], input)  in             -- Get next chunk before whitespace
                                     case determineToken (newToken, []) of
                                         (Just token, [])    -> extractTokens rest (token:tokenList)
@@ -25,10 +27,11 @@ extractTokens input tokenList = let (newToken, rest) = getNextChunk ([], input) 
 
 getNextChunk :: (String, String) -> (String,String)
 getNextChunk ([], '"':rest) = getStringChunk (['"'],rest)
+getNextChunk ([], '#':rest) = getComment (['#'],rest)
 getNextChunk (newChunk, []) = (reverse newChunk, [])                                           -- End of line
 getNextChunk (newChunk, ' ':rest) = (reverse newChunk, ' ':rest)                               -- Stop at whitespace
-getNextChunk (newChunk, '\n':rest) = getNextChunk (newChunk, rest)                             -- Eat new lines
-getNextChunk (newChunk, '\t':rest) = getNextChunk (newChunk, rest)                             -- Eat new lines
+getNextChunk (newChunk, '\n':rest) =  (reverse newChunk, '\n':rest)                            -- Stop at new line
+getNextChunk (newChunk, '\t':rest) =  (reverse newChunk, '\t':rest)                            -- Stop at tab
 getNextChunk (newChunk, rest) = getNextChunk ((head rest):newChunk, tail rest)                 -- Pull another character over
 
 getStringChunk :: (String, String) -> (String,String)
@@ -36,11 +39,17 @@ getStringChunk (newChunk, '"':rest) = (newChunk ++ ['"'], rest)
 getStringChunk (newChunk, next:rest) = getStringChunk (newChunk ++ [next], rest)
 getStringChunk (newChunk, []) = (newChunk, [])
 
+getComment :: (String, String) -> (String,String)
+getComment (newChunk, '\n':rest) = (newChunk ++ ['\n'], rest)
+getComment (newChunk, next:rest) = getComment (newChunk ++ [next], rest)
+getComment (newChunk, []) = (newChunk, [])
+
 determineToken :: (String, String) -> (Maybe Token, String)
 determineToken ([], more) = (Nothing, more)                                                    -- If all potential is in more, then error
 
 determineToken (potential, more)
-    | isSymbol potential = (Just (Token SYMBOL potential), more)
+    | isSymbol potential                                                                                    = (Just (Token SYMBOL potential), more)
+    | head potential == '#'                                                                                 = (Just (Token COMMENT potential), more)
     | (isNum first || (first == '-') && rest /= []) && noDecimal rest && onlyNums rest                           = (Just (Token INTEGER potential), more)
     | isString potential                                                                                    = (Just (Token STRING potential), more)
     | isChar potential                                                                                      = (Just (Token CHAR potential), more)

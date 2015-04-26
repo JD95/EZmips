@@ -134,7 +134,15 @@ processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token MATH _):more) (
 
 
 -- Case of assignment to return of a function
-processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token FUNC _):more) (Fdata _ table _) = Nothing
+processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token FUNC _):more) (Fdata name table counts) =
+    case lookUpVar sym table of
+        Just reg -> case getUntil_SemiColon more 0 of
+                        Just (math,_) -> let (math', newTable) = replaceMathVars math table in
+                                         Just ((Assignment [(Token SYMBOL reg)] (init math')), (Fdata name table counts))
+                        Nothing -> Nothing
+        Nothing -> let tokens = ((Token SYMBOL sym):(Token ASSIGNMENT "="):(Token MATH "@"):more)
+                       newTable = (addToTable sym table)
+                   in  processStatement tokens (Fdata name newTable counts)
 
 -- Case of assignment to value of an Array
 processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token PUNCTUATION "["):more) (Fdata _ table _) = Nothing
