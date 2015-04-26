@@ -3,8 +3,6 @@ module Main where
 
 
 import System.IO;
-import Data.Text
-import Data.Text.Internal
 
 import Scanner
 import Parser
