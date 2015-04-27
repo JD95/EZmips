@@ -35,7 +35,7 @@ interface filePath = do
     --putStrLn ezmips
     case scan ezmips of
         Just tokens -> do
-            putStrLn (show tokens)
+            --putStrLn (show tokens)
             case gatherData tokens of
                 Just (dataSec, functions) -> do
                     --putStrLn (show functions)
@@ -43,7 +43,10 @@ interface filePath = do
                         Just functions' -> do
                             --putStrLn (show function)
                             case mergeMaybes (Prelude.map convertFunction functions') of
-                                Just program -> mapM_ (putStrLn) program
+                                Just program -> do
+                                    putStrLn ".globl main"
+                                    putStrLn ".text"
+                                    mapM_ (putStrLn) program
                                 Nothing -> putStrLn "Could not compile functions"
                         Nothing -> putStrLn "Error in function formatting"
                 Nothing -> putStrLn "Error in reading data section"
