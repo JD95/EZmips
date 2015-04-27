@@ -74,6 +74,12 @@ convertStatement (Assignment [(Token SYMBOL var)] ((Token FUNC _):(Token SYMBOL 
     let assign = "move " ++ var ++ ", " ++ "$v0"
     Just (loadArgs ++ [call] ++ [assign])
 
+convertStatement (Assignment [(Token SYMBOL var)] ((Token PUNCTUATION "["):(Token SYMBOL name):(Token INTEGER index):(Token PUNCTUATION "]"):[])) = do
+    let loadAddress = "la $t0, "++name
+        loadindex = ["li $t1, "++index] ++ ["add $t1, $t1, $t1"] ++ ["add $t1, $t1, $t1"] ++ ["add $t2, $t0, $t1"]
+        accessArray = "lw " ++var++", 0($t2)"
+    Just ([loadAddress] ++ loadindex ++ [accessArray])
+
 convertStatement (Return (Token INTEGER num) (Token SYMBOL end)) =
     let load = "li $t0, " ++ num
         return' = "move $v0, $t0"
@@ -151,7 +157,43 @@ convertFunction (Function name args body) = do
     instructions <- mergeMaybes (map convertStatement body)
     Just ([name ++ ":"]++pushStack ++ (moveArgs args (length args)) ++ instructions ++ ["end_"++name++":"] ++ popStack)
 
+convertData :: Data -> Maybe [String]
+convertData (Array "numbers" name size) =
+    let name' = name ++ ":"
+        dataType = ".word "
+        elements = "0"++(foldr (++) ""  (take ((read (tail $ init size)::Int) -1) (repeat ", 0")))
+    in Just [name' ++ ['\t'] ++ dataType ++ elements]
 
+convertData (Array "chars" name size) =
+    let name' = name ++ ":"
+        dataType = ".byte "
+        elements = tail $ init size -- remove quotes
+    in Just [name' ++ ['\t'] ++ dataType ++ elements]
+
+convertData (Global "string" name value) =
+    let name' = name ++ ":"
+        dataType = ".asciiz "
+        elements = '"':value ++ ['"']
+    in Just [name' ++ ['\t'] ++ dataType ++ elements]
+
+convertData (Global "char" name value) =
+    let name' = name ++ ":"
+        dataType = ".byte "
+        elements = value
+    in Just [name' ++ ['\t'] ++ dataType ++ elements]
+
+convertData (Global "number" name value) =
+    let name' = name ++ ":"
+        dataType = ".word "
+        elements = value 
+    in Just [name' ++ ['\t'] ++ dataType ++ elements]
+
+convertData _ = Nothing
+
+convertDataList :: [Data] -> Maybe [String]
+convertDataList input = do
+    datas <- mergeMaybes (map convertData input)
+    Just ([".data"] ++ datas)
 
 moveArgs :: [String] -> Int -> [String]
 moveArgs [] _ = []

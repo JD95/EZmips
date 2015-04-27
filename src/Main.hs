@@ -44,11 +44,18 @@ interface filePath = do
                             --putStrLn (show function)
                             case mergeMaybes (Prelude.map convertFunction functions') of
                                 Just program -> do
-                                    putStrLn ".globl main"
-                                    putStrLn ".text"
-                                    mapM_ (putStrLn) program
+                                    case convertDataList dataSec of
+                                        Just dataSec' -> printProgram dataSec' program 
+                                        Nothing -> putStrLn "Bad syntax in data section"
                                 Nothing -> putStrLn "Could not compile functions"
                         Nothing -> putStrLn "Error in function formatting"
                 Nothing -> putStrLn "Error in reading data section"
         Nothing -> putStrLn "Bad syntax...somewhere"
     hClose handle
+
+printProgram :: [String]-> [String] -> IO ()
+printProgram datas functions = do
+    putStrLn ".globl main"
+    putStrLn ".text"
+    mapM_ (putStrLn) functions
+    mapM_ (putStrLn) datas

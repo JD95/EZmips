@@ -5,7 +5,7 @@ import Data.List
 import Scanner
 import ScannerTypes
 
-data Data = Array String String Int | Global String String String
+data Data = Array String String String | Global String String String
 
 data Function = Function String [String] [Statement] deriving (Show)
 

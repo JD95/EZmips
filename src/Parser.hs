@@ -22,10 +22,10 @@ gatherData (token:more) = do
 
 
 processData :: [Token] -> Maybe Data
-processData ((Token SYMBOL "array"):(Token SYMBOL dataType):(Token SYMBOL name):(Token ASSIGNMENT "="):(Token INTEGER size):(Token PUNCTUATION ";"):[]) =
+processData ((Token SYMBOL "array"):(Token SYMBOL dataType):(Token SYMBOL name):(Token ASSIGNMENT "="):(Token STRING size):(Token PUNCTUATION ";"):[]) =
     case dataType of
-        "numbers" -> Just (Array dataType name (read size::Int))
-        "chars"   -> Just (Array dataType name (read size::Int))
+        "numbers" -> Just (Array dataType name size)
+        "chars"   -> Just (Array dataType name size)
         _ -> Nothing
 
 processData ((Token SYMBOL "string"):(Token SYMBOL name):(Token ASSIGNMENT "="):(Token STRING lit):(Token PUNCTUATION ";"):[]) = do
@@ -35,7 +35,7 @@ processData ((Token SYMBOL "char"):(Token SYMBOL name):(Token ASSIGNMENT "="):(T
     Just (Global "char" name lit)
 
 processData ((Token SYMBOL "number"):(Token SYMBOL name):(Token ASSIGNMENT "="):(Token INTEGER num):(Token PUNCTUATION ";"):[]) = do
-    Just (Global "char" name num)
+    Just (Global "number" name num)
 
 processData _ = Nothing
 
@@ -149,7 +149,12 @@ processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token FUNC _):(Token 
                    in  processStatement tokens (Fdata name newTable counts)
 
 -- Case of assignment to value of an Array
-processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token PUNCTUATION "["):more) (Fdata _ table _) = Nothing
+processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token PUNCTUATION "["):(Token SYMBOL arrName):(Token INTEGER index):(Token PUNCTUATION "]"):(Token PUNCTUATION ";"):[]) (Fdata name table counts) = do
+    case lookUpVar sym table of
+        Just reg -> Just ((Assignment [(Token SYMBOL reg)] ((Token PUNCTUATION "["):(Token SYMBOL arrName):(Token INTEGER index):(Token PUNCTUATION "]"):[]), (Fdata name table counts)))
+        Nothing -> let tokens = ((Token SYMBOL sym):(Token ASSIGNMENT "="):(Token PUNCTUATION "["):(Token SYMBOL arrName):(Token INTEGER index):(Token PUNCTUATION "]"):(Token PUNCTUATION ";"):[])
+                       newTable = (addToTable sym table)
+                   in  processStatement tokens (Fdata name newTable counts)
 
 -- Error case, Symbol begin assigned to another variable
 processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token SYMBOL _):more) _ = Nothing

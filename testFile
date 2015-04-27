@@ -1,5 +1,5 @@
-array numbers numArr = 3;
-array chars charArr = 3;
+array numbers numArr = "3";
+array chars charArr = "'*','*','*','*','*','*','*'";
 string worked = "works!";
 number Z = 0;
 char Y = 'y';
@@ -15,5 +15,6 @@ main:
         c = @ c + a;
     }
 
+    c = [ numArr 0 ];
     c = 5;
 end~
