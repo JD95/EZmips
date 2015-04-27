@@ -85,7 +85,7 @@ convertStatement (Assignment ((Token PUNCTUATION "["):(Token SYMBOL name):(Token
         loadindex = ["li $t1, "++index] ++ ["add $t1, $t1, $t1"] ++ ["add $t1, $t1, $t1"] ++ ["add $t2, $t0, $t1"]
         value = "li $t3, "++var
         accessArray = "sw " ++"$t3"++", 0($t2)"
-    Just ([loadAddress] ++ loadindex ++ [accessArray])
+    Just ([loadAddress] ++ loadindex ++ [value] ++ [accessArray])
 
 convertStatement (Return (Token INTEGER num) (Token SYMBOL end)) =
     let load = "li $t0, " ++ num
@@ -102,6 +102,11 @@ convertStatement (Return (Token SYMBOL sym) (Token SYMBOL end)) =
 convertStatement (FunCALL (Token SYMBOL "printChar") ((Token CHAR dataVar):[])) = do
     let loadCommand = "li $v0, 11"
     let loadArg = "li $a0, "++dataVar
+    Just ([loadCommand] ++ [loadArg]++["syscall"])
+
+convertStatement (FunCALL (Token SYMBOL "printChar") ((Token SYMBOL dataVar):[])) = do
+    let loadCommand = "li $v0, 11"
+    let loadArg = "move $a0, "++dataVar
     Just ([loadCommand] ++ [loadArg]++["syscall"])
 
 convertStatement (FunCALL (Token SYMBOL "printString") ((Token CHAR dataVar):[])) = do

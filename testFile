@@ -16,5 +16,6 @@ main:
     }
 
     [ charArr 0 ] = 'H';
-    c = 5;
+    c = [ charArr 0 ];
+    ~ printChar c;
 end~

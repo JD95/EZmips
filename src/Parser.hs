@@ -184,6 +184,15 @@ processStatement ((Token SYMBOL "return"):(Token PUNCTUATION ";"):[]) (Fdata nam
 processStatement ((Token FUNC "~"):(Token SYMBOL "printChar"):(Token CHAR dataVar):(Token PUNCTUATION ";"):[]) fdata = do
     Just ((FunCALL (Token SYMBOL "printChar") [(Token CHAR dataVar)]), fdata)
 
+-- Print char in a register
+processStatement ((Token FUNC "~"):(Token SYMBOL "printChar"):(Token SYMBOL dataVar):(Token PUNCTUATION ";"):[]) (Fdata name table counts) = do
+    case lookUpVar dataVar table of
+        Just reg -> Just ((FunCALL (Token SYMBOL "printChar") [(Token SYMBOL reg)]), (Fdata name table counts))
+        Nothing -> let tokens = ((Token FUNC "~"):(Token SYMBOL "printChar"):(Token SYMBOL dataVar):(Token PUNCTUATION ";"):[])
+                       newTable = (addToTable dataVar table)
+                   in  processStatement tokens (Fdata name newTable counts)
+    
+
 processStatement ((Token FUNC "~"):(Token SYMBOL "printString"):(Token SYMBOL dataVar):(Token PUNCTUATION ";"):[]) fdata = do
     Just ((FunCALL (Token SYMBOL "printString") [(Token SYMBOL dataVar)]), fdata)
 
