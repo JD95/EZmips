@@ -170,6 +170,16 @@ processStatement ((Token SYMBOL "return"):(Token SYMBOL sym):(Token PUNCTUATION 
 processStatement ((Token SYMBOL "return"):(Token PUNCTUATION ";"):[]) (Fdata name table counts) = do
    Just ((Return (Token SYMBOL "") (Token SYMBOL ("end_"++name))), (Fdata name table counts))
 
+-- Call to a print Function
+processStatement ((Token FUNC "~"):(Token SYMBOL "printChar"):(Token CHAR dataVar):(Token PUNCTUATION ";"):[]) fdata = do
+    Just ((FunCALL (Token SYMBOL "printChar") [(Token CHAR dataVar)]), fdata)
+
+processStatement ((Token FUNC "~"):(Token SYMBOL "printString"):(Token SYMBOL dataVar):(Token PUNCTUATION ";"):[]) fdata = do
+    Just ((FunCALL (Token SYMBOL "printString") [(Token SYMBOL dataVar)]), fdata)
+
+processStatement ((Token FUNC "~"):(Token SYMBOL "printInt"):(Token INTEGER dataVar):(Token PUNCTUATION ";"):[]) fdata = do
+    Just ((FunCALL (Token SYMBOL "printInt") [(Token INTEGER dataVar)]), fdata)
+
 -- Free function call, will not load a return value
 processStatement ((Token FUNC "~"):(Token SYMBOL fname):more) fdata = do
     (args,_) <- getUntil_SemiColon more 0 -- Gets args and semi colon
@@ -184,7 +194,7 @@ processStatement ((Token SYMBOL "if"):(Token PUNCTUATION "("):(Token SYMBOL var)
     Just ((If ifName (Condition (Token SYMBOL var) (Token SYMBOL logic) value) innerStatements), (Fdata name table (newCName, ifs+1, whiles, fors)))
     --Just ((If "test" (Condition (Token SYMBOL "") (Token SYMBOL "") (Token SYMBOL "")) []), (Fdata "" [] (0,0,0))) -- For testing
 
--- IF statement
+-- While Loop statement
 processStatement ((Token SYMBOL "while"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):value:(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest) (Fdata name table (cName, ifs, whiles, fors)) = do
     let inner = (init rest) ++ [(Token SYMBOL "end~")] -- To make the gather statments end
     let newCName = cName++"_if"++[(intToDigit ifs)]

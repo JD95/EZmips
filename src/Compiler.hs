@@ -85,6 +85,23 @@ convertStatement (Return (Token SYMBOL "") (Token SYMBOL end)) =
 convertStatement (Return (Token SYMBOL sym) (Token SYMBOL end)) =
     Just [("move $v0, " ++ sym),("j "++ end)] -- Move value to return, then jump to end of function
 
+-- Call to predefined function
+convertStatement (FunCALL (Token SYMBOL "printChar") ((Token CHAR dataVar):[])) = do
+    let loadCommand = "li $v0, 11"
+    let loadArg = "li $a0, "++dataVar
+    Just ([loadCommand] ++ [loadArg]++["syscall"])
+
+convertStatement (FunCALL (Token SYMBOL "printString") ((Token CHAR dataVar):[])) = do
+    let loadCommand = "li $v0, 4"
+    let loadArg = "la $a0, "++ dataVar
+    Just ([loadCommand] ++ [loadArg]++["syscall"])
+
+convertStatement (FunCALL (Token SYMBOL "printInt") ((Token INTEGER dataVar):[])) = do
+    let loadCommand = "li $v0, 4"
+    let loadArg = "li $a0, "++ dataVar
+    Just ([loadCommand] ++ [loadArg]++["syscall"])
+
+-- Call to user defined function
 convertStatement (FunCALL (Token SYMBOL name) args) = do
     loadArgs <- loadFuncArgs args 0
     let call = "jal " ++ name
