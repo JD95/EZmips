@@ -78,7 +78,7 @@ replaceMathVars (token:more) table =
     let (rest, newTable) = replaceMathVars more table in
         (token:rest, newTable)
 
-replaceMathVars [] _ = ([],[])
+replaceMathVars [] table = ([],table)
 
 argsToReg :: [Token] -> [String] -> ([Token], [String])
 argsToReg ((Token SYMBOL var):more) table = 

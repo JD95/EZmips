@@ -187,28 +187,35 @@ processStatement ((Token FUNC "~"):(Token SYMBOL fname):more) fdata = do
 
 -- IF statement
 processStatement ((Token SYMBOL "if"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):value:(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest) (Fdata name table (cName, ifs, whiles, fors)) = do
-    let inner = (init rest) ++ [(Token SYMBOL "end~")] -- To make the gather statments end
-    let newCName = cName++"_if"++[(intToDigit ifs)]
-    let ifName = name++ newCName
-    (innerStatements, _) <- gatherStatements inner (Fdata name table (newCName,ifs, whiles, fors)) -- Any other control statements in this one will have names in relation to it eg. func_if0_if1
-    Just ((If ifName (Condition (Token SYMBOL var) (Token SYMBOL logic) value) innerStatements), (Fdata name table (newCName, ifs+1, whiles, fors)))
-    --Just ((If "test" (Condition (Token SYMBOL "") (Token SYMBOL "") (Token SYMBOL "")) []), (Fdata "" [] (0,0,0))) -- For testing
+    case lookUpVar var table of
+        Just var' -> do
+            let inner = (init rest) ++ [(Token SYMBOL "end~")] -- To make the gather statments end
+            let newCName = cName++"_if"++[(intToDigit ifs)]
+            let ifName = name++ newCName
+            (innerStatements, _) <- gatherStatements inner (Fdata name table (newCName,ifs, whiles, fors)) -- Any other control statements in this one will have names in relation to it eg. func_if0_if1
+            Just ((If ifName (Condition (Token SYMBOL var') (Token SYMBOL logic) value) innerStatements), (Fdata name table (newCName, ifs+1, whiles, fors)))
+        Nothing -> let tokens = ((Token SYMBOL "if"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):value:(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest)
+                       newTable = (addToTable var table)
+                   in  processStatement tokens (Fdata name newTable (cName, ifs, whiles, fors))
 
 -- While Loop statement
 processStatement ((Token SYMBOL "while"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):value:(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest) (Fdata name table (cName, ifs, whiles, fors)) = do
-    let inner = (init rest) ++ [(Token SYMBOL "end~")] -- To make the gather statments end
-    let newCName = cName++"_if"++[(intToDigit ifs)]
-    let wName = name++newCName
-    (innerStatements, _) <- gatherStatements inner (Fdata name table (newCName,ifs, whiles, fors)) -- Any other control statements in this one will have names in relation to it eg. func_if0_if1
-    Just ((WhileLoop wName (Condition (Token SYMBOL var) (Token SYMBOL logic) value) innerStatements), (Fdata name table (newCName,ifs, whiles+1, fors)))
-    --Just ((If "test" (Condition (Token SYMBOL "") (Token SYMBOL "") (Token SYMBOL "")) []), (Fdata "" [] (0,0,0))) -- For testing
-
+    case lookUpVar var table of
+        Just var' -> do
+            let inner = (init rest) ++ [(Token SYMBOL "end~")] -- To make the gather statments end
+            let newCName = cName++"_while"++[(intToDigit ifs)]
+            let wName = name++newCName
+            (innerStatements, _) <- gatherStatements inner (Fdata name table (newCName,ifs, whiles, fors)) -- Any other control statements in this one will have names in relation to it eg. func_if0_if1
+            Just ((WhileLoop wName (Condition (Token SYMBOL var') (Token SYMBOL logic) value) innerStatements), (Fdata name table (newCName,ifs, whiles+1, fors)))
+        Nothing -> let tokens = ((Token SYMBOL "while"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):value:(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest)
+                       newTable = (addToTable var table)
+                   in  processStatement tokens (Fdata name newTable (cName, ifs, whiles, fors))
 processStatement _ _ = Nothing
 
 {-Tests-}
 test_ProcessStatement :: IO ()
 test_ProcessStatement = do
-    case scan "if(i<5){if(i > 5){return;}}" of
+    case scan "while(i<5){if(i > 5){return;}}" of
         Just tokens -> do
             putStrLn (show tokens)
             case processStatement tokens (Fdata "main" ["b","a"] ("",0,0,0)) of

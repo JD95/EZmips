@@ -112,12 +112,12 @@ convertStatement (If name (Condition (Token SYMBOL var) (Token SYMBOL logic) (To
     let value = "li $t0, " ++ num
     let end = "end_" ++ name ++":"
     condition <- case logic of -- Using negative logic here to make the brancing easier
-                    "<" -> Just ("blt "++ var ++ ", " ++ value++", end_"++name)
-                    ">" -> Just ("bgt "++ var ++ ", " ++ value++", end_"++name)
-                    "<=" -> Just ("bge "++ var ++ ", " ++ value++", end_"++name)
-                    ">=" -> Just ("ble "++ var ++ ", " ++ value++", end_"++name)
-                    "==" -> Just ("bne "++ var ++ ", " ++ value++", end_"++name)
-                    "!=" -> Just ("beq "++ var ++ ", " ++ value++", end_"++name)
+                    "<" -> Just ("blt "++ var ++ ", " ++ "$t0"++", end_"++name)
+                    ">" -> Just ("bgt "++ var ++ ", " ++ "$t0"++", end_"++name)
+                    "<=" -> Just ("bge "++ var ++ ", " ++ "$t0"++", end_"++name)
+                    ">=" -> Just ("ble "++ var ++ ", " ++ "$t0"++", end_"++name)
+                    "==" -> Just ("bne "++ var ++ ", " ++ "$t0"++", end_"++name)
+                    "!=" -> Just ("beq "++ var ++ ", " ++ "$t0"++", end_"++name)
                     _ -> Nothing
     body' <- mergeMaybes (map convertStatement body)
     Just ([label] ++ [value] ++ [condition] ++ body' ++ [end])
@@ -128,12 +128,12 @@ convertStatement (WhileLoop name (Condition (Token SYMBOL var) (Token SYMBOL log
     let end = "end_" ++ name ++":"
     let loop = "j "++ name
     condition <- case logic of -- Using negative logic here to make the brancing easier
-                    "<" -> Just ("blt "++ var ++ ", " ++ value++", end_"++name)
-                    ">" -> Just ("bgt "++ var ++ ", " ++ value++", end_"++name)
-                    "<=" -> Just ("bge "++ var ++ ", " ++ value++", end_"++name)
-                    ">=" -> Just ("ble "++ var ++ ", " ++ value++", end_"++name)
-                    "==" -> Just ("bne "++ var ++ ", " ++ value++", end_"++name)
-                    "!=" -> Just ("beq "++ var ++ ", " ++ value++", end_"++name)
+                    "<" -> Just ("blt "++ var ++ ", " ++ "$t0" ++", end_"++name)
+                    ">" -> Just ("bgt "++ var ++ ", " ++ "$t0" ++", end_"++name)
+                    "<=" -> Just ("bge "++ var ++ ", " ++ "$t0" ++", end_"++name)
+                    ">=" -> Just ("ble "++ var ++ ", " ++ "$t0"++", end_"++name)
+                    "==" -> Just ("bne "++ var ++ ", " ++ "$t0" ++", end_"++name)
+                    "!=" -> Just ("beq "++ var ++ ", " ++ "$t0" ++", end_"++name)
                     _ -> Nothing
     body' <- mergeMaybes (map convertStatement body)
     Just ([label] ++ [value] ++ [condition] ++ body' ++ [loop] ++ [end])
