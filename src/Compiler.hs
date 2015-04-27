@@ -80,6 +80,13 @@ convertStatement (Assignment [(Token SYMBOL var)] ((Token PUNCTUATION "["):(Toke
         accessArray = "lw " ++var++", 0($t2)"
     Just ([loadAddress] ++ loadindex ++ [accessArray])
 
+convertStatement (Assignment ((Token PUNCTUATION "["):(Token SYMBOL name):(Token INTEGER index):(Token PUNCTUATION "]"):[]) [(Token CHAR var)]) = do
+    let loadAddress = "la $t0, "++name
+        loadindex = ["li $t1, "++index] ++ ["add $t1, $t1, $t1"] ++ ["add $t1, $t1, $t1"] ++ ["add $t2, $t0, $t1"]
+        value = "li $t3, "++var
+        accessArray = "sw " ++value++", 0($t2)"
+    Just ([loadAddress] ++ loadindex ++ [accessArray])
+
 convertStatement (Return (Token INTEGER num) (Token SYMBOL end)) =
     let load = "li $t0, " ++ num
         return' = "move $v0, $t0"

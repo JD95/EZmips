@@ -15,6 +15,6 @@ main:
         c = @ c + a;
     }
 
-    c = [ numArr 0 ];
+    [ charArr 0 ] = 'H';
     c = 5;
 end~

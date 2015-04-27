@@ -156,6 +156,11 @@ processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token PUNCTUATION "["
                        newTable = (addToTable sym table)
                    in  processStatement tokens (Fdata name newTable counts)
 
+-- Case of assignment of a char value to and array index
+processStatement ((Token PUNCTUATION "["):(Token SYMBOL arrName):(Token INTEGER index):(Token PUNCTUATION "]"):(Token ASSIGNMENT _):(Token CHAR sym):(Token PUNCTUATION ";"):[]) (Fdata name table counts) = do
+    Just ((Assignment ((Token PUNCTUATION "["):(Token SYMBOL arrName):(Token INTEGER index):(Token PUNCTUATION "]"):[]) [(Token CHAR sym)], (Fdata name table counts)))
+
+
 -- Error case, Symbol begin assigned to another variable
 processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token SYMBOL _):more) _ = Nothing
 
