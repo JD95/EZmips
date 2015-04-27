@@ -84,7 +84,7 @@ convertStatement (Assignment ((Token PUNCTUATION "["):(Token SYMBOL name):(Token
     let loadAddress = "la $t0, "++name
         loadindex = ["li $t1, "++index] ++ ["add $t1, $t1, $t1"] ++ ["add $t1, $t1, $t1"] ++ ["add $t2, $t0, $t1"]
         value = "li $t3, "++var
-        accessArray = "sw " ++value++", 0($t2)"
+        accessArray = "sw " ++"$t3"++", 0($t2)"
     Just ([loadAddress] ++ loadindex ++ [accessArray])
 
 convertStatement (Return (Token INTEGER num) (Token SYMBOL end)) =
