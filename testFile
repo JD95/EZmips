@@ -15,6 +15,5 @@ main:
         c = @ c + a;
     }
 
-    [ charArr c ] = 'H';
-    ~ printChar c;
+    [charArr c] = 'H'; ~printChar c;
 end~
