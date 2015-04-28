@@ -62,6 +62,10 @@ convertStatement (Assignment [(Token SYMBOL var)] [(Token INTEGER num)]) = do
     let assign = "li " ++ var ++ ", " ++ num
     Just ([assign])
 
+convertStatement (Assignment [(Token SYMBOL var)] [(Token CHAR num)]) = do
+    let assign = "li " ++ var ++ ", " ++ num
+    Just ([assign])
+
 convertStatement (Assignment [(Token SYMBOL var)] ((Token MATH _):math)) = do
     tree <- convertMath_as ([], math)
     (result, instructions, _) <- treeToMips tree (-1)

@@ -116,11 +116,19 @@ getStatement _ = Nothing
 
 processStatement :: [Token] -> Fdata -> Maybe (Statement, Fdata)
 
--- Case of assignment to a literal value
+-- Case of assignment to a literal value integer
 processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token INTEGER num):(Token PUNCTUATION ";"):[]) (Fdata name table counts) =
     case lookUpVar sym table of
         Just reg -> Just ((Assignment [(Token SYMBOL reg)] [(Token INTEGER num)]), (Fdata name table counts))
         Nothing -> let tokens = ((Token SYMBOL sym):(Token ASSIGNMENT "="):(Token INTEGER num):(Token PUNCTUATION ";"):[])
+                       newTable = (addToTable sym table)
+                   in  processStatement tokens (Fdata name newTable counts)
+
+-- Case of assignment to a literal value char
+processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token CHAR num):(Token PUNCTUATION ";"):[]) (Fdata name table counts) =
+    case lookUpVar sym table of
+        Just reg -> Just ((Assignment [(Token SYMBOL reg)] [(Token CHAR num)]), (Fdata name table counts))
+        Nothing -> let tokens = ((Token SYMBOL sym):(Token ASSIGNMENT "="):(Token CHAR num):(Token PUNCTUATION ";"):[])
                        newTable = (addToTable sym table)
                    in  processStatement tokens (Fdata name newTable counts)
 
