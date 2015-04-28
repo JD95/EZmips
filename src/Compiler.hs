@@ -72,7 +72,7 @@ convertStatement (Assignment [(Token SYMBOL var)] ((Token MATH _):math)) = do
     let assign = "move " ++ var ++ ", " ++ result
     Just (instructions ++ [assign])
 
-convertStatement (Assignment [(Token SYMBOL var)] ((Token FUNC _):(Token SYMBOL "getChar"):(Token PUNCTUATION ";"):[])) = do
+convertStatement (Assignment [(Token SYMBOL var)] ((Token FUNC _):(Token SYMBOL "getChar"):[])) = do
     let loadCommand = "li $v0, 5"
     let loadInput = "move " ++ var ++", $v0"
     Just ([loadCommand] ++["syscall"]++ [loadInput])
