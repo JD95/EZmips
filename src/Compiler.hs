@@ -241,7 +241,7 @@ convertData (Array "chars" name size) =
 convertData (Global "string" name value) =
     let name' = name ++ ":"
         dataType = ".asciiz "
-        elements = '"':value ++ ['"']
+        elements = value
     in Just [name' ++ ['\t'] ++ dataType ++ elements]
 
 convertData (Global "char" name value) =
