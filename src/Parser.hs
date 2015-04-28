@@ -169,10 +169,10 @@ processStatement ((Token SYMBOL sym):(Token ASSIGNMENT _):(Token PUNCTUATION "["
     case lookUpVar sym table of
         Just reg -> case lookUpVar index table of
                         Just index' -> Just ((Assignment [(Token SYMBOL reg)] ((Token PUNCTUATION "["):(Token SYMBOL arrName):(Token INTEGER index'):(Token PUNCTUATION "]"):[]), (Fdata name table counts)))
-                        Nothing -> let tokens = ((Token SYMBOL sym):(Token ASSIGNMENT "="):(Token PUNCTUATION "["):(Token SYMBOL arrName):(Token INTEGER index):(Token PUNCTUATION "]"):(Token PUNCTUATION ";"):[])
+                        Nothing -> let tokens = ((Token SYMBOL sym):(Token ASSIGNMENT "="):(Token PUNCTUATION "["):(Token SYMBOL arrName):(Token SYMBOL index):(Token PUNCTUATION "]"):(Token PUNCTUATION ";"):[])
                                        newTable = (addToTable index table)
                                    in  processStatement tokens (Fdata name newTable counts)
-        Nothing -> let tokens = ((Token SYMBOL sym):(Token ASSIGNMENT "="):(Token PUNCTUATION "["):(Token SYMBOL arrName):(Token INTEGER index):(Token PUNCTUATION "]"):(Token PUNCTUATION ";"):[])
+        Nothing -> let tokens = ((Token SYMBOL sym):(Token ASSIGNMENT "="):(Token PUNCTUATION "["):(Token SYMBOL arrName):(Token SYMBOL index):(Token PUNCTUATION "]"):(Token PUNCTUATION ";"):[])
                        newTable = (addToTable sym table)
                    in  processStatement tokens (Fdata name newTable counts)
 
