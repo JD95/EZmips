@@ -105,7 +105,7 @@ convertStatement (Assignment ((Token PUNCTUATION "["):(Token SYMBOL name):(Token
 
 convertStatement (Assignment ((Token PUNCTUATION "["):(Token SYMBOL name):(Token SYMBOL index):(Token PUNCTUATION "]"):[]) [(Token CHAR var)]) = do
     let loadAddress = "la $t0, "++name
-        loadindex = ["li $t1, "++index] ++ ["add $t1, $t1, $t1"] ++ ["add $t1, $t1, $t1"] ++ ["add $t2, $t0, $t1"]
+        loadindex = ["move $t1, "++index] ++ ["add $t1, $t1, $t1"] ++ ["add $t1, $t1, $t1"] ++ ["add $t2, $t0, $t1"]
         accessArray = "sw " ++index++", 0($t2)"
     Just ([loadAddress] ++ loadindex ++ [accessArray])
 
