@@ -49,7 +49,7 @@ gatherFunctions input = do
 gatherFunction :: [Token] -> Maybe (Function, [Token])
 gatherFunction ((Token SYMBOL name):rest) = do
     (args, more) <- getUntil_Colon rest 0
-    let (argRegs,newTable) = argsToReg (init args) [] -- Assigns save registers to the arguements
+    let (argRegs,newTable) = if args /= [] then argsToReg (init args) [] else argsToReg [] []-- Assigns save registers to the arguements
     args' <- symbolsToString argRegs                  -- Extracts values from tokens
     (body, nextFunc) <- gatherStatements more (Fdata name newTable ("",0,0,0))
     Just ((Function name args' body), nextFunc)
@@ -232,9 +232,10 @@ processStatement ((Token FUNC "~"):(Token SYMBOL "printNewLine"):(Token PUNCTUAT
     Just ((FunCALL (Token SYMBOL "printNewLine") []), fdata)
 
 -- Free function call, will not load a return value
-processStatement ((Token FUNC "~"):(Token SYMBOL fname):more) fdata = do
+processStatement ((Token FUNC "~"):(Token SYMBOL fname):more) (Fdata name table counts) = do
     (args,_) <- getUntil_SemiColon more 0 -- Gets args and semi colon
-    Just ((FunCALL (Token SYMBOL fname) (init args)), fdata)
+    let (args',newTable) = if (args /= []) then argsToReg (init args) table else argsToReg (args) table
+    Just ((FunCALL (Token SYMBOL fname) (args')), (Fdata name newTable counts))
 
 -- IF statement with Number
 processStatement ((Token SYMBOL "if"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):(Token INTEGER value):(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest) (Fdata name table (cName, ifs, whiles, fors)) = do

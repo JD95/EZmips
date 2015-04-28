@@ -8,15 +8,46 @@ array chars row5 = "'*','*','*','*','*','*','*','*'";
 main:
 	end = 0;
 	cMovesFirst = 1;
+	c = ~getInt;
+
+	~hPlaceMove c;
 
 	~printBoard;
-    ~printNewLine;
+		
 end~
 
 hPlaceMove move:
 	   open = '*';
 	   array = [ row5 move];
-
+	   if(array != open)
+	   {
+		array = [ row4 move ];
+		if (array != open)
+		{
+			array = [ row3 move ];
+			if (array != open)
+			{
+				array = [ row2 move ];
+				if (array != open)
+				{
+					array = [ row1 move ];
+					if (array != open)
+					{
+						[ row0 move ] = 'H';
+						return;
+					}	
+					[ row1 move ] = 'H';
+					return;
+				}
+				[ row2 move ] = 'H';
+					return;
+			}
+			[ row3 move ] = 'H';
+					return;
+		}
+		[ row4 move ] = 'H';
+		return;
+	   }
 
 	   [ row2 move ] = 'H';
 end~
@@ -24,7 +55,69 @@ end~
 printBoard:
 	one = 1;
 
+	~printChar 'C';
+	counter = 0;
+	while (counter < 6)
+	{
+		array = [ row0 counter];
+		~printChar array;
+		counter = @ counter + one;
+	}
+	~printChar 'C';
+	~printNewLine;
 
+	~printChar 'H';
+	counter = 0;
+	while (counter < 6)
+	{
+		array = [ row1 counter];
+		~printChar array;
+		counter = @ counter + one;
+	}
+	~printChar 'H';
+	~printNewLine;
 
+	~printChar 'C';
+	counter = 0;
+	while (counter < 6)
+	{
+		array = [ row2 counter];
+		~printChar array;
+		counter = @ counter + one;
+	}
+	~printChar 'C';
+	~printNewLine;
 
+	~printChar 'H';
+	counter = 0;
+	while (counter < 6)
+	{
+		array = [ row3 counter];
+		~printChar array;
+		counter = @ counter + one;
+	}
+	~printChar 'H';
+	~printNewLine;
+
+	~printChar 'C';
+	counter = 0;
+	while (counter < 6)
+	{
+		array = [ row4 counter];
+		~printChar array;
+		counter = @ counter + one;
+	}
+	~printChar 'C';
+	~printNewLine;
+
+	~printChar 'H';
+	counter = 0;
+	while (counter < 6)
+	{
+		array = [ row5 counter];
+		~printChar array;
+		counter = @ counter + one;
+	}
+	~printChar 'H';
+	~printNewLine;
 end~

@@ -47,9 +47,10 @@ loadFuncArgs ((Token SYMBOL arg):more) argNum = do
     rest <- loadFuncArgs more (argNum + 1)
     Just (loadArg:rest)
 
+
 loadFuncArgs ((Token INTEGER arg):more) argNum = do
     let loadArg = "li $a" ++ [(intToDigit argNum)] ++ ", " ++ arg
-    rest <- loadFuncArgs more (argNum + 1)
+    rest <- loadFuncArgs more (argNum + 1) 
     Just (loadArg:rest)
     
 loadFuncArgs [] _ = Just []
