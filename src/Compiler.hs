@@ -86,13 +86,13 @@ convertStatement (Assignment [(Token SYMBOL var)] ((Token FUNC _):(Token SYMBOL 
 convertStatement (Assignment [(Token SYMBOL var)] ((Token PUNCTUATION "["):(Token SYMBOL name):(Token INTEGER index):(Token PUNCTUATION "]"):[])) = do
     let loadAddress = "la $t0, "++name
         loadindex = ["li $t1, "++index] ++ ["add $t1, $t1, $t1"] ++ ["add $t1, $t1, $t1"] ++ ["add $t2, $t0, $t1"]
-        accessArray = "lw " ++var++", 0($t2)"
+        accessArray = "lb " ++var++", 0($t2)"
     Just ([loadAddress] ++ loadindex ++ [accessArray])
 
 convertStatement (Assignment [(Token SYMBOL var)] ((Token PUNCTUATION "["):(Token SYMBOL name):(Token SYMBOL index):(Token PUNCTUATION "]"):[])) = do
     let loadAddress = "la $t0, "++name
         loadindex = ["move $t1, "++index] ++ ["add $t1, $t1, $t1"] ++ ["add $t1, $t1, $t1"] ++ ["add $t2, $t0, $t1"]
-        accessArray = "l " ++var++", 0($t2)"
+        accessArray = "lb " ++var++", 0($t2)"
     Just ([loadAddress] ++ loadindex ++ [accessArray])
 
 
@@ -100,13 +100,13 @@ convertStatement (Assignment ((Token PUNCTUATION "["):(Token SYMBOL name):(Token
     let loadAddress = "la $t0, "++name
         loadindex = ["li $t1, "++index] ++ ["add $t1, $t1, $t1"] ++ ["add $t1, $t1, $t1"] ++ ["add $t2, $t0, $t1"]
         value = "li $t3, "++var
-        accessArray = "sw " ++"$t3"++", 0($t2)"
+        accessArray = "sb " ++"$t3"++", 0($t2)"
     Just ([loadAddress] ++ loadindex ++ [value] ++ [accessArray])
 
 convertStatement (Assignment ((Token PUNCTUATION "["):(Token SYMBOL name):(Token SYMBOL index):(Token PUNCTUATION "]"):[]) [(Token CHAR var)]) = do
     let loadAddress = "la $t0, "++name
         loadindex = ["move $t1, "++index] ++ ["add $t1, $t1, $t1"] ++ ["add $t1, $t1, $t1"] ++ ["add $t2, $t0, $t1"]
-        accessArray = "sw " ++index++", 0($t2)"
+        accessArray = "sb " ++index++", 0($t2)"
     Just ([loadAddress] ++ loadindex ++ [accessArray])
 
 convertStatement (Return (Token INTEGER num) (Token SYMBOL end)) =
