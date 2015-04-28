@@ -5,7 +5,7 @@ number Z = 0;
 char Y = 'y';
 
 main:
-    a = 1;
+    one = 1;
     b = 1;
     c = @ a - b;
 
@@ -13,7 +13,33 @@ main:
     {
         ~ printChar 'A';
         c = @ c + a;
+        c = ~ getChar;
     }
 
     [charArr c] = 'H'; ~printChar c;
+end~
+
+printBoard:
+	one = 1;
+
+	~printChar 'C';
+	counter = 0;
+	while (counter < 6)
+	{
+		array = [ row0 counter];
+		~printChar array;
+		counter = @ counter + one;
+	}
+	~printChar 'C';
+
+	~printChar 'H';
+	counter = 0;
+	while (counter < 6)
+	{
+		array = [ row1 counter];
+		~printChar array;
+		counter = @ counter + one;
+	}
+	~printChar 'H';
+
 end~

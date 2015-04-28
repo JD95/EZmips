@@ -68,6 +68,11 @@ convertStatement (Assignment [(Token SYMBOL var)] ((Token MATH _):math)) = do
     let assign = "move " ++ var ++ ", " ++ result
     Just (instructions ++ [assign])
 
+convertStatement (Assignment [(Token SYMBOL var)] ((Token FUNC _):(Token SYMBOL "getChar"):(Token PUNCTUATION ";"):[])) = do
+    let loadCommand = "li $v0, 5"
+    let loadInput = "move " ++ var ++", $v0"
+    Just ([loadCommand] ++["syscall"]++ [loadInput])
+
 convertStatement (Assignment [(Token SYMBOL var)] ((Token FUNC _):(Token SYMBOL fname):args)) = do
     loadArgs <- loadFuncArgs args 0
     let call = "jal " ++ fname
@@ -113,6 +118,11 @@ convertStatement (FunCALL (Token SYMBOL "printChar") ((Token CHAR dataVar):[])) 
 convertStatement (FunCALL (Token SYMBOL "printChar") ((Token SYMBOL dataVar):[])) = do
     let loadCommand = "li $v0, 11"
     let loadArg = "move $a0, "++dataVar
+    Just ([loadCommand] ++ [loadArg]++["syscall"])
+
+convertStatement (FunCALL (Token SYMBOL "printNewLine") []) = do
+    let loadCommand = "li $v0, 11"
+    let loadArg = "li $a0, "++['\n']
     Just ([loadCommand] ++ [loadArg]++["syscall"])
 
 convertStatement (FunCALL (Token SYMBOL "printString") ((Token CHAR dataVar):[])) = do

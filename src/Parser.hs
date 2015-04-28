@@ -220,6 +220,9 @@ processStatement ((Token FUNC "~"):(Token SYMBOL "printString"):(Token SYMBOL da
 processStatement ((Token FUNC "~"):(Token SYMBOL "printInt"):(Token INTEGER dataVar):(Token PUNCTUATION ";"):[]) fdata = do
     Just ((FunCALL (Token SYMBOL "printInt") [(Token INTEGER dataVar)]), fdata)
 
+processStatement ((Token FUNC "~"):(Token SYMBOL "printNewLine"):(Token PUNCTUATION ";"):[]) fdata = do
+    Just ((FunCALL (Token SYMBOL "printNewLine") []), fdata)
+
 -- Free function call, will not load a return value
 processStatement ((Token FUNC "~"):(Token SYMBOL fname):more) fdata = do
     (args,_) <- getUntil_SemiColon more 0 -- Gets args and semi colon
