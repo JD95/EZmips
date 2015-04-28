@@ -302,7 +302,7 @@ processStatement _ _ = Nothing
 {-Tests-}
 test_ProcessStatement :: IO ()
 test_ProcessStatement = do
-    case scan "while(i<5){if(i > 5){return;}}" of
+    case scan "c = ~getInt;" of
         Just tokens -> do
             putStrLn (show tokens)
             case processStatement tokens (Fdata "main" ["b","a"] ("",0,0,0)) of
