@@ -47,10 +47,9 @@ loadFuncArgs ((Token SYMBOL arg):more) argNum = do
     rest <- loadFuncArgs more (argNum + 1)
     Just (loadArg:rest)
 
-
 loadFuncArgs ((Token INTEGER arg):more) argNum = do
     let loadArg = "li $a" ++ [(intToDigit argNum)] ++ ", " ++ arg
-    rest <- loadFuncArgs more (argNum + 1) 
+    rest <- loadFuncArgs more (argNum + 1)
     Just (loadArg:rest)
     
 loadFuncArgs [] _ = Just []
@@ -73,7 +72,7 @@ convertStatement (Assignment [(Token SYMBOL var)] ((Token MATH _):math)) = do
     let assign = "move " ++ var ++ ", " ++ result
     Just (instructions ++ [assign])
 
-convertStatement (Assignment [(Token SYMBOL var)] ((Token FUNC _):(Token SYMBOL "getInt"):[])) = do
+convertStatement (Assignment [(Token SYMBOL var)] ((Token FUNC _):(Token SYMBOL "getChar"):[])) = do
     let loadCommand = "li $v0, 5"
     let loadInput = "move " ++ var ++", $v0"
     Just ([loadCommand] ++["syscall"]++ [loadInput])
@@ -93,7 +92,7 @@ convertStatement (Assignment [(Token SYMBOL var)] ((Token PUNCTUATION "["):(Toke
 convertStatement (Assignment [(Token SYMBOL var)] ((Token PUNCTUATION "["):(Token SYMBOL name):(Token SYMBOL index):(Token PUNCTUATION "]"):[])) = do
     let loadAddress = "la $t0, "++name
         loadindex = ["move $t1, "++index] ++ ["add $t1, $t1, $t1"] ++ ["add $t1, $t1, $t1"] ++ ["add $t2, $t0, $t1"]
-        accessArray = "lw " ++var++", 0($t2)"
+        accessArray = "l " ++var++", 0($t2)"
     Just ([loadAddress] ++ loadindex ++ [accessArray])
 
 
