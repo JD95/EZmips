@@ -225,31 +225,66 @@ processStatement ((Token FUNC "~"):(Token SYMBOL fname):more) fdata = do
     (args,_) <- getUntil_SemiColon more 0 -- Gets args and semi colon
     Just ((FunCALL (Token SYMBOL fname) (init args)), fdata)
 
--- IF statement
-processStatement ((Token SYMBOL "if"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):value:(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest) (Fdata name table (cName, ifs, whiles, fors)) = do
+-- IF statement with Number
+processStatement ((Token SYMBOL "if"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):(Token INTEGER value):(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest) (Fdata name table (cName, ifs, whiles, fors)) = do
     case lookUpVar var table of
         Just var' -> do
             let inner = (init rest) ++ [(Token SYMBOL "end~")] -- To make the gather statments end
             let newCName = cName++"_if"++[(intToDigit ifs)]
             let ifName = name++ newCName
             (innerStatements, _) <- gatherStatements inner (Fdata name table (newCName,ifs, whiles, fors)) -- Any other control statements in this one will have names in relation to it eg. func_if0_if1
-            Just ((If ifName (Condition (Token SYMBOL var') (Token SYMBOL logic) value) innerStatements), (Fdata name table (newCName, ifs+1, whiles, fors)))
-        Nothing -> let tokens = ((Token SYMBOL "if"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):value:(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest)
+            Just ((If ifName (Condition (Token SYMBOL var') (Token SYMBOL logic) (Token INTEGER value)) innerStatements), (Fdata name table (newCName, ifs+1, whiles, fors)))
+        Nothing -> let tokens = ((Token SYMBOL "if"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):(Token INTEGER value):(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest)
+                       newTable = (addToTable var table)
+                   in  processStatement tokens (Fdata name newTable (cName, ifs, whiles, fors))
+
+-- IF statement with Variable
+processStatement ((Token SYMBOL "if"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):(Token SYMBOL value):(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest) (Fdata name table (cName, ifs, whiles, fors)) = do
+    case lookUpVar var table of
+        Just var' -> case lookUpVar value table of
+                        Just value' -> do
+                            let inner = (init rest) ++ [(Token SYMBOL "end~")] -- To make the gather statments end
+                            let newCName = cName++"_if"++[(intToDigit ifs)]
+                            let ifName = name++ newCName
+                            (innerStatements, _) <- gatherStatements inner (Fdata name table (newCName,ifs, whiles, fors)) -- Any other control statements in this one will have names in relation to it eg. func_if0_if1
+                            Just ((If ifName (Condition (Token SYMBOL var') (Token SYMBOL logic) (Token SYMBOL value')) innerStatements), (Fdata name table (newCName, ifs+1, whiles, fors)))
+                        Nothing -> let tokens = ((Token SYMBOL "if"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):(Token SYMBOL value):(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest)
+                                       newTable = (addToTable value table)
+                                   in  processStatement tokens (Fdata name newTable (cName, ifs, whiles, fors))
+        Nothing -> let tokens = ((Token SYMBOL "if"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):(Token SYMBOL value):(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest)
                        newTable = (addToTable var table)
                    in  processStatement tokens (Fdata name newTable (cName, ifs, whiles, fors))
 
 -- While Loop statement
-processStatement ((Token SYMBOL "while"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):value:(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest) (Fdata name table (cName, ifs, whiles, fors)) = do
+processStatement ((Token SYMBOL "while"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):(Token INTEGER value):(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest) (Fdata name table (cName, ifs, whiles, fors)) = do
     case lookUpVar var table of
         Just var' -> do
             let inner = (init rest) ++ [(Token SYMBOL "end~")] -- To make the gather statments end
             let newCName = cName++"_while"++[(intToDigit ifs)]
             let wName = name++newCName
             (innerStatements, _) <- gatherStatements inner (Fdata name table (newCName,ifs, whiles, fors)) -- Any other control statements in this one will have names in relation to it eg. func_if0_if1
-            Just ((WhileLoop wName (Condition (Token SYMBOL var') (Token SYMBOL logic) value) innerStatements), (Fdata name table (newCName,ifs, whiles+1, fors)))
-        Nothing -> let tokens = ((Token SYMBOL "while"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):value:(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest)
+            Just ((WhileLoop wName (Condition (Token SYMBOL var') (Token SYMBOL logic) (Token INTEGER value)) innerStatements), (Fdata name table (newCName,ifs, whiles+1, fors)))
+        Nothing -> let tokens = ((Token SYMBOL "while"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):(Token INTEGER value):(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest)
                        newTable = (addToTable var table)
                    in  processStatement tokens (Fdata name newTable (cName, ifs, whiles, fors))
+
+-- While Loop statement
+processStatement ((Token SYMBOL "while"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):(Token SYMBOL value):(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest) (Fdata name table (cName, ifs, whiles, fors)) = do
+    case lookUpVar var table of
+        Just var' -> case lookUpVar value table of
+                        Just value' -> do
+                            let inner = (init rest) ++ [(Token SYMBOL "end~")] -- To make the gather statments end
+                            let newCName = cName++"_while"++[(intToDigit ifs)]
+                            let wName = name++newCName
+                            (innerStatements, _) <- gatherStatements inner (Fdata name table (newCName,ifs, whiles, fors)) -- Any other control statements in this one will have names in relation to it eg. func_if0_if1
+                            Just ((WhileLoop wName (Condition (Token SYMBOL var') (Token SYMBOL logic) (Token SYMBOL value')) innerStatements), (Fdata name table (newCName,ifs, whiles+1, fors)))
+                        Nothing -> let tokens = ((Token SYMBOL "while"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):(Token SYMBOL value):(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest)
+                                       newTable = (addToTable value table)
+                                   in  processStatement tokens (Fdata name newTable (cName, ifs, whiles, fors))
+        Nothing -> let tokens = ((Token SYMBOL "while"):(Token PUNCTUATION "("):(Token SYMBOL var):(Token SYMBOL logic):(Token SYMBOL value):(Token PUNCTUATION ")"):(Token PUNCTUATION "{"):rest)
+                       newTable = (addToTable var table)
+                   in  processStatement tokens (Fdata name newTable (cName, ifs, whiles, fors))
+
 processStatement _ _ = Nothing
 
 {-Tests-}

@@ -9,7 +9,7 @@ main:
     b = 1;
     c = @ a - b;
 
-    while(c < 5)
+    while(c < a)
     {
         ~ printChar 'A';
         c = @ c + a;
