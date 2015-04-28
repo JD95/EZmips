@@ -10,7 +10,7 @@ main:
 	cMovesFirst = 1;
 
 	~printBoard;
-
+    ~printNewLine;
 end~
 
 hPlaceMove move:

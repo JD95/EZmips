@@ -126,7 +126,7 @@ convertStatement (FunCALL (Token SYMBOL "printChar") ((Token SYMBOL dataVar):[])
 
 convertStatement (FunCALL (Token SYMBOL "printNewLine") []) = do
     let loadCommand = "li $v0, 11"
-    let loadArg = "li $a0, "++['\n']
+    let loadArg = "li $a0, "++"\\n"
     Just ([loadCommand] ++ [loadArg]++["syscall"])
 
 convertStatement (FunCALL (Token SYMBOL "printString") ((Token CHAR dataVar):[])) = do
