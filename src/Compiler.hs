@@ -74,8 +74,8 @@ convertStatement (Assignment [(Token SYMBOL var)] ((Token MATH _):math)) = do
 
 convertStatement (Assignment [(Token SYMBOL var)] ((Token FUNC _):(Token SYMBOL "getInt"):[])) = do
     let loadCommand = "li $v0, 5"
-    let loadInput = "move " ++ var ++", $v0"
-    Just ([loadCommand] ++["syscall"]++ [loadInput])
+    let saveInput = "move " ++ var ++", $v0"
+    Just ([loadCommand] ++["syscall"]++ [saveInput])
 
 convertStatement (Assignment [(Token SYMBOL var)] ((Token FUNC _):(Token SYMBOL fname):args)) = do
     loadArgs <- loadFuncArgs args 0
@@ -142,8 +142,13 @@ convertStatement (FunCALL (Token SYMBOL "printString") ((Token SYMBOL dataVar):[
     Just ([loadCommand] ++ [loadArg]++["syscall"])
 
 convertStatement (FunCALL (Token SYMBOL "printInt") ((Token INTEGER dataVar):[])) = do
-    let loadCommand = "li $v0, 4"
+    let loadCommand = "li $v0, 1"
     let loadArg = "li $a0, "++ dataVar
+    Just ([loadCommand] ++ [loadArg]++["syscall"])
+
+convertStatement (FunCALL (Token SYMBOL "printInt") ((Token SYMBOL dataVar):[])) = do
+    let loadCommand = "li $v0, 1"
+    let loadArg = "move $a0, "++ dataVar
     Just ([loadCommand] ++ [loadArg]++["syscall"])
 
 -- Call to user defined function

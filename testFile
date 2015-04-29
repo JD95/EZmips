@@ -5,12 +5,15 @@ string row2 = "C*******C";
 main:
 	end = 0;
 	cMovesFirst = 1;
+
 	c = ~getInt;
 
+    ~printInt c;
 	~hPlaceMove c;
 
 	~printBoard;
-		
+
+
 end~
 
 hPlaceMove move:
