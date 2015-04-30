@@ -1,29 +1,35 @@
 string row0 = "C*******C";
-string row1 = "C*******C";
+string row1 = "H*******H";
 string row2 = "C*******C";
+string row3 = "H*******H";
+string row4 = "C*******C";
+string row5 = "H*******H";
 
 main:
 	end = 0;
-	cMovesFirst = 1;
+	counter = 0;
+	one = 1;
 
-	c = ~getInt;
-
-    ~printInt c;
-	~hPlaceMove c;
-
-	~printBoard;
-
-
+	human = 'H';
+	while( counter < 10)
+	{
+		~printBoard;
+		c = ~getInt;
+		~hPlaceMove c human;
+		count = @ counter + one;
+	}
+		
 end~
 
-hPlaceMove move:
+hPlaceMove move player:
 	   open = '*';
+
 	   array = [ row5 move];
 	   if(array != open)
 	   {
 		array = [ row4 move ];
 		if (array != open)
-		{
+		{  	
 			array = [ row3 move ];
 			if (array != open)
 			{
@@ -33,91 +39,41 @@ hPlaceMove move:
 					array = [ row1 move ];
 					if (array != open)
 					{
-						[ row0 move ] = 'H';
+						[ row0 move ] = player;
 						return;
 					}	
-					[ row1 move ] = 'H';
+					[ row1 move ] = player;
 					return;
 				}
-				[ row2 move ] = 'H';
-					return;
+				[ row2 move ] = player;
+				return;
 			}
-			[ row3 move ] = 'H';
-					return;
+			[ row3 move ] = player;
+			return;
 		}
-		[ row4 move ] = 'H';
+		[ row4 move ] = player;
 		return;
 	   }
-
-	   [ row2 move ] = 'H';
+	   [ row5 move ] = player;
 end~
 
 printBoard:
-	one = 1;
-
-	~printChar 'C';
-	counter = 0;
-	while (counter < 6)
-	{
-		array = [ row0 counter];
-		~printChar array;
-		counter = @ counter + one;
-	}
-	~printChar 'C';
+	
+	~printString row0;
 	~printNewLine;
 
-	~printChar 'H';
-	counter = 0;
-	while (counter < 6)
-	{
-		array = [ row1 counter];
-		~printChar array;
-		counter = @ counter + one;
-	}
-	~printChar 'H';
+	~printString row1;
 	~printNewLine;
 
-	~printChar 'C';
-	counter = 0;
-	while (counter < 6)
-	{
-		array = [ row2 counter];
-		~printChar array;
-		counter = @ counter + one;
-	}
-	~printChar 'C';
+	~printString row2;
 	~printNewLine;
 
-	~printChar 'H';
-	counter = 0;
-	while (counter < 6)
-	{
-		array = [ row3 counter];
-		~printChar array;
-		counter = @ counter + one;
-	}
-	~printChar 'H';
+	~printString row3;
 	~printNewLine;
 
-	~printChar 'C';
-	counter = 0;
-	while (counter < 6)
-	{
-		array = [ row4 counter];
-		~printChar array;
-		counter = @ counter + one;
-	}
-	~printChar 'C';
+	~printString row4;
 	~printNewLine;
 
-	~printChar 'H';
-	counter = 0;
-	while (counter < 6)
-	{
-		array = [ row5 counter];
-		~printChar array;
-		counter = @ counter + one;
-	}
-	~printChar 'H';
+	~printString row5;
 	~printNewLine;
 end~

@@ -183,10 +183,14 @@ processStatement ((Token PUNCTUATION "["):(Token SYMBOL arrName):(Token INTEGER 
 
 
 -- Case of assignment of a char value to and array with a variable index
-processStatement ((Token PUNCTUATION "["):(Token SYMBOL arrName):(Token SYMBOL index):(Token PUNCTUATION "]"):(Token ASSIGNMENT _):(Token CHAR sym):(Token PUNCTUATION ";"):[]) (Fdata name table counts) = do
+processStatement ((Token PUNCTUATION "["):(Token SYMBOL arrName):(Token SYMBOL index):(Token PUNCTUATION "]"):(Token ASSIGNMENT _):(Token SYMBOL sym):(Token PUNCTUATION ";"):[]) (Fdata name table counts) = do
     case lookUpVar index table of
-        Just index' -> Just ((Assignment ((Token PUNCTUATION "["):(Token SYMBOL arrName):(Token SYMBOL index'):(Token PUNCTUATION "]"):[]) [(Token CHAR sym)], (Fdata name table counts)))
-        Nothing -> let tokens = ((Token PUNCTUATION "["):(Token SYMBOL arrName):(Token SYMBOL index):(Token PUNCTUATION "]"):(Token ASSIGNMENT "="):(Token CHAR sym):(Token PUNCTUATION ";"):[]) 
+        Just index' -> case lookUpVar sym table of
+                        Just sym' -> Just ((Assignment ((Token PUNCTUATION "["):(Token SYMBOL arrName):(Token SYMBOL index'):(Token PUNCTUATION "]"):[]) [(Token SYMBOL sym')], (Fdata name table counts)))
+                        Nothing -> let tokens = ((Token PUNCTUATION "["):(Token SYMBOL arrName):(Token SYMBOL index):(Token PUNCTUATION "]"):(Token ASSIGNMENT "="):(Token CHAR sym):(Token PUNCTUATION ";"):[]) 
+                                       newTable = (addToTable sym table)
+                                   in  processStatement tokens (Fdata name newTable counts)
+        Nothing -> let tokens = ((Token PUNCTUATION "["):(Token SYMBOL arrName):(Token SYMBOL index):(Token PUNCTUATION "]"):(Token ASSIGNMENT "="):(Token SYMBOL sym):(Token PUNCTUATION ";"):[]) 
                        newTable = (addToTable index table)
                    in  processStatement tokens (Fdata name newTable counts)
 
